@@ -40,7 +40,7 @@ let handler = async (m, { conn, text, usedPrefix, isAdmin, isOwner, command }) =
 
 handler.help = ['ترقيه @منشن', 'اعفاء @منشن'];
 handler.tags = ['group'];
-handler.command = ['ترقيه','رفع','ارفع','demote','اعفاء']; 
+handler.command = ['ترقيه','ارفع','demote','اعفاء']; 
 handler.group = true;
 handler.admin = true;
 handler.botAdmin = true;

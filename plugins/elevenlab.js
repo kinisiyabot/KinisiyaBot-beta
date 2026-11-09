@@ -78,7 +78,7 @@ let handler = async (m, { conn, command, usedPrefix }) => {
   }
 };
 
-handler.command = ["قسم_ai_audio", "elevenlab"];
+handler.command = ["قسم_ai_audio"];
 handler.tags = ["voice-ai"];
 handler.help = ["اصوات - عرض جميع الأصوات"];
 

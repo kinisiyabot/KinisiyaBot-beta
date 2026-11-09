@@ -42,6 +42,6 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
 };
 
-handler.command = ['apk', 'apk3'];
+handler.command = ['apk', 'apk3', 'تطبيق3'];
 
 export default handler;

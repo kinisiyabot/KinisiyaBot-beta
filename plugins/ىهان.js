@@ -93,7 +93,7 @@ const betRoulette = (user, chatId, amount, color) => {
 
 handler.help = ['gamble <amount> <color(red/black)>'];
 handler.tags = ['economy'];
-handler.command = ['رهان'];
+handler.command = ['رهان2'];
 
 handler.group = true;
 

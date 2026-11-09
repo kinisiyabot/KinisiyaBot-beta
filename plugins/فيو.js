@@ -189,6 +189,6 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
 handler.help = ['veo3 <وصف> | [16:9/9:16]'];
 handler.tags = ['ai'];
-handler.command = ['صورةلفيديو', 'img2vid', 'veo3', 'فيو'];
+handler.command = ['صورةلفيديو', 'img2vid', 'فيو'];
 
 export default handler;

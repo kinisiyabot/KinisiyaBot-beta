@@ -2,6 +2,12 @@
   #       𝐊𝐈𝐍𝐈𝐒𝐈𝐘𝐀 𝐁𝐎𝐓          #
  #============================# */
  
+
+// ℹ️ مكان الـ API (بلوجنات التنزيل والذكاء الاصطناعي) موجود في:
+//      lib/config.js   ← عدّل DEFAULT_API_BASE من هناك
+//    أو شغّل بمتغيّر بيئة:  API_BASE=https://... npm start
+//    (كل البلوجنات تقرأ العنوان من global.API_BASE)
+
 import fs, { watchFile, unwatchFile } from "fs"
 import chalk from "chalk"
 import { fileURLToPath } from "url"

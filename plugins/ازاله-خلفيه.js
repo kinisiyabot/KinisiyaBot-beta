@@ -52,6 +52,6 @@ let handler = async (m, { conn, command }) => {
 
 handler.help = ['rmbg', 'ازالة-الخلفية2', 'ازاله-الخلفيه2'];
 handler.tags = ['tools'];
-handler.command = ['ازاله-خلفيه', 'ازالة-الخلفية2', 'ازاله-الخلفيه2'];
+handler.command = ['ازاله-خلفيه', 'ازالة-الخلفية2'];
 
 export default handler;
