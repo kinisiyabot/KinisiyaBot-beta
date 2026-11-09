@@ -15,7 +15,8 @@
     "qr": "node index.js qr",
     "code": "node index.js code",
     "test": "node --test \"tests/*.test.js\"",
-    "test2": "nodemon index.js"
+    "test2": "nodemon index.js",
+    "audit:plugins": "node scripts/audit-plugins.mjs"
   },
   "author": "kinisiya bot (https://t.me/yertchi_kunusua)",
   "homepage": "https://github.com/kinisiyabot/KinisiyaBot-beta",

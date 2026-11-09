@@ -31,6 +31,7 @@ import path, { join, dirname } from 'path';
 import { Boom } from '@hapi/boom';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import './lib/config.js';
+import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
 const { proto } = await import('@whiskeysockets/baileys');
@@ -347,6 +348,12 @@ const pluginFolder = global.__dirname(join(__dirname, './plugins'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 
+// بلوجن واحد قد يُصدِّر أكثر من handler (مصفوفة)، أو يصدّر `handler` بالاسم
+// بدل التصدير الافتراضي. نوحّد كل الأشكال هنا حتى لا تُهمَل أي أوامر.
+function unloadPlugin(filename) {
+    return unloadPluginFile(global.plugins, filename);
+}
+
 async function filesInit() {
     const files = readdirSync(pluginFolder).filter(pluginFilter);
     // حمّل البلوجنات بالتوازي (دفعات) لتسريع الإقلاع بدل التحميل التسلسلي.
@@ -357,10 +364,10 @@ async function filesInit() {
             try {
                 const file = global.__filename(join(pluginFolder, filename));
                 const module = await import(file);
-                global.plugins[filename] = module.default || module;
+                Object.assign(global.plugins, resolvePluginExports(module, filename));
             } catch (e) {
                 conn.logger.error(e);
-                delete global.plugins[filename];
+                unloadPlugin(filename);
             }
         }));
     }
@@ -371,11 +378,11 @@ await filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
 global.reload = async (_ev, filename) => {
     if (pluginFilter(filename)) {
         const dir = global.__filename(join(pluginFolder, filename), true);
-        if (filename in global.plugins) {
+        if (filename in global.plugins || Object.keys(global.plugins).some(k => k.startsWith(`${filename}#`))) {
             if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`);
             else {
                 conn.logger.warn(`deleted plugin - '${filename}'`);
-                return delete global.plugins[filename];
+                return unloadPlugin(filename);
             }
         } else conn.logger.info(`new plugin - '${filename}'`);
         const err = syntaxerror(readFileSync(dir), filename, {
@@ -386,7 +393,8 @@ global.reload = async (_ev, filename) => {
         else {
             try {
                 const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
-                global.plugins[filename] = module.default || module;
+                unloadPlugin(filename);
+                Object.assign(global.plugins, resolvePluginExports(module, filename));
             } catch (e) {
                 conn.logger.error(`error in this plugin '${filename}\n${global.format(e)}'`);
             } finally {
