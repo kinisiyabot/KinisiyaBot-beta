@@ -40,7 +40,7 @@ let handler = async (m, { text, usedPrefix, command, conn }) => {
 
   try {
     // 🚀 استدعاء API
-    const apiUrl = `https://apex-api-five.vercel.app/api/v1/ai/image2figure`;
+    const apiUrl = `${global.API_BASE}/api/v1/ai/image2figure`;
     
     const res = await axios.get(apiUrl, {
       params: {

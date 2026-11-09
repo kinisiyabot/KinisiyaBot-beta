@@ -92,7 +92,7 @@ const handler = async (m, { conn, args, command }) => {
   try {
     await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } })
 
-    const { data } = await axios.get(`https://apex-api-five.vercel.app/api/v1/download/YTDL`, {
+    const { data } = await axios.get(`${global.API_BASE}/api/v1/download/YTDL`, {
       params: { url, type, quality }
     })
 

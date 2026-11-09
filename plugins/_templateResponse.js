@@ -11,6 +11,8 @@ m.message.buttonsResponseMessage || m.message.templateButtonReplyMessage || m.me
 
 if (!interactiveMsg) return
 
+const opts = global.opts || {}
+
 let id = null
 
 try {
@@ -44,7 +46,7 @@ for (const name in global.plugins) {
 const plugin = global.plugins[name]
 if (!plugin || plugin.disabled) continue
 if (!opts['restrict'] && plugin.tags?.includes('admin')) continue
-if (typeof plugin !== 'function' || !plugin.command) continue
+if (!plugin.command) continue
 
 const str2Regex = (str) => {
 if (typeof str !== 'string') return ''

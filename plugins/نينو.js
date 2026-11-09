@@ -41,7 +41,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
       try {
         const resAPI = await axios.post(
-          "https://apex-api-five.vercel.app/api/v1/ai/nano_banana",
+          "" + global.API_BASE + "/api/v1/ai/nano_banana",
           formData,
           { headers: formData.getHeaders() }
         );
@@ -52,7 +52,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     } else {
       const resAPI = await axios.get(
-        `https://apex-api-five.vercel.app/api/v1/ai/nano_banana?imageUrl=${encodeURIComponent(
+        `${global.API_BASE}/api/v1/ai/nano_banana?imageUrl=${encodeURIComponent(
           imageInput
         )}&prompt=${encodeURIComponent(prompt)}`
       );

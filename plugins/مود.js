@@ -10,7 +10,7 @@ let handler = async (m, { conn, args }) => {
   }
 
   let query = args.join(' ')
-  let api = `https://apex-api-five.vercel.app/api/v1/search/mod?q=${encodeURIComponent(query)}`
+  let api = `${global.API_BASE}/api/v1/search/mod?q=${encodeURIComponent(query)}`
 
   try {
     let res = await fetch(api)

@@ -30,6 +30,7 @@ import Pino from 'pino';
 import path, { join, dirname } from 'path';
 import { Boom } from '@hapi/boom';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
+import './lib/config.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
 const { proto } = await import('@whiskeysockets/baileys');
@@ -347,15 +348,21 @@ const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 
 async function filesInit() {
-    for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
-        try {
-            const file = global.__filename(join(pluginFolder, filename));
-            const module = await import(file);
-            global.plugins[filename] = module.default || module;
-        } catch (e) {
-            conn.logger.error(e);
-            delete global.plugins[filename];
-        }
+    const files = readdirSync(pluginFolder).filter(pluginFilter);
+    // حمّل البلوجنات بالتوازي (دفعات) لتسريع الإقلاع بدل التحميل التسلسلي.
+    const BATCH = 16;
+    for (let i = 0; i < files.length; i += BATCH) {
+        const batch = files.slice(i, i + BATCH);
+        await Promise.all(batch.map(async (filename) => {
+            try {
+                const file = global.__filename(join(pluginFolder, filename));
+                const module = await import(file);
+                global.plugins[filename] = module.default || module;
+            } catch (e) {
+                conn.logger.error(e);
+                delete global.plugins[filename];
+            }
+        }));
     }
 }
 

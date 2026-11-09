@@ -11,7 +11,7 @@ let handler = async (m, { conn, text }) => {
 
     try {
         // طلب البحث من API
-        let res = await axios.get(`https://apex-api-five.vercel.app/api/v1/search/sound_cloud?query=${encodeURIComponent(text)}`);
+        let res = await axios.get(`${global.API_BASE}/api/v1/search/sound_cloud?query=${encodeURIComponent(text)}`);
         let data = res.data;
 
         if (!data.status || !data.results || !data.results.length)

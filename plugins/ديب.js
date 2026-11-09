@@ -10,7 +10,7 @@ let handler = async (m, { conn, text, command }) => {
 
   try {
     const res = await axios.get(
-      `https://apex-api-five.vercel.app/api/v1/ai/deepseek?prompt=${encodeURIComponent(text)}`
+      `${global.API_BASE}/api/v1/ai/deepseek?prompt=${encodeURIComponent(text)}`
     );
 
     if (res.data?.response) {

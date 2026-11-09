@@ -4,9 +4,9 @@ import path from 'path';
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const folder = './plugins';
   const oldNames = [
-    'https://apex-api-five.vercel.app/',
+    '' + global.API_BASE + '/',
   ]; 
-  const newName = 'https://apex-api-five.vercel.app/';
+  const newName = '' + global.API_BASE + '/';
 
   let count = 0;
 

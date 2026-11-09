@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const aiLabs = {
   api: {
-    base: 'https://apex-api-five.vercel.app/api/v1/ai/draw',
+    base: '' + global.API_BASE + '/api/v1/ai/draw',
     endpoints: {
       text2img: '/text2img',
       text2vid: '/text2vid'

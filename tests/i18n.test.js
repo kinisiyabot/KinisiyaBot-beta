@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { t, categoryTitle, categoryIds, normalizeLang, CATEGORIES, LANGUAGES } from '../lib/i18n.js'
+
+test('normalizeLang accepts codes and native names', () => {
+  assert.equal(normalizeLang('ar'), 'ar')
+  assert.equal(normalizeLang('العربية'), 'ar')
+  assert.equal(normalizeLang('en'), 'en')
+  assert.equal(normalizeLang('English'), 'en')
+  assert.equal(normalizeLang('es'), 'es')
+  assert.equal(normalizeLang('español'), 'es')
+  assert.equal(normalizeLang('fr'), null)
+  assert.equal(normalizeLang(''), null)
+})
+
+test('all three languages expose every category', () => {
+  const ids = categoryIds()
+  assert.ok(ids.length > 0)
+  for (const id of ids) {
+    for (const lang of ['ar', 'en', 'es']) {
+      const title = categoryTitle(lang, id)
+      assert.ok(title && title !== id, `${lang}/${id} missing title`)
+    }
+  }
+})
+
+test('categories are actually translated (not all identical)', () => {
+  const ai = ['ar', 'en', 'es'].map(l => categoryTitle(l, 'ai'))
+  assert.equal(new Set(ai).size, 3)
+})
+
+test('t resolves keys and interpolates functions', () => {
+  assert.equal(t('en', 'level', 5), '*🌸┊⇇Level↜❪5❫*')
+  assert.equal(t('es', 'rank', 'Admin'), '*🍭┊⇇Rango↜❪Admin❫*')
+  assert.ok(t('ar', 'welcome', 'user').includes('@user'))
+  // unknown key returns the key itself (no crash)
+  assert.equal(t('en', 'nope'), 'nope')
+})
+
+test('LANGUAGES exposes the three selectable options', () => {
+  assert.deepEqual(Object.keys(LANGUAGES).sort(), ['ar', 'en', 'es'])
+})

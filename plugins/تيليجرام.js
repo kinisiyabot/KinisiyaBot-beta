@@ -24,7 +24,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       text: `⏳ *جاري تحميل الفيديو من تليجرام...*`
     }, { quoted: m });
 
-    const apiUrl = `https://apex-api-five.vercel.app/api/v1/download/telgram?url=${encodeURIComponent(telegramUrl)}`;
+    const apiUrl = `${global.API_BASE}/api/v1/download/telgram?url=${encodeURIComponent(telegramUrl)}`;
     
     let response;
     for (let attempt = 1; attempt <= 3; attempt++) {
