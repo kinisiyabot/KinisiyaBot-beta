@@ -241,7 +241,7 @@ async function connectionUpdate(update) {
         global.timestamp.connect = new Date();
     }
     if (global.db.data == null) loadDatabase();
-    if (update.qr) {
+    if (update.qr && (opcion === '1' || methodCodeQR)) {
         console.log(chalk.green.bold(`[ 🌊 ]  Please scan this QR code`));
         try {
             console.log(await QRCode.toString(update.qr, { type: 'terminal', small: true }));
