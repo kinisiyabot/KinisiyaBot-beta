@@ -1,4 +1,4 @@
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 
 // 1. التعريفات والروابط العامة للبوت
 global.gt = '𝐊𝐈𝐍𝐈𝐒𝐈𝐘𝐀 𝐁𝐎𝐓';

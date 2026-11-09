@@ -1,4 +1,4 @@
-const { generateWAMessageFromContent, prepareWAMessageMedia } = (await import('@whiskeysockets/baileys')).default;
+const { generateWAMessageFromContent, prepareWAMessageMedia } = await import('@whiskeysockets/baileys');
 import yts from 'yt-search';
 
 let handler = async (m, { conn, usedPrefix, command, text }) => {

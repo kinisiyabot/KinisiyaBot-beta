@@ -1,4 +1,4 @@
-import { areJidsSameUser } from 'baileys-pro'
+import { areJidsSameUser } from '@whiskeysockets/baileys'
 
 export async function before(m, { participants, conn }) {
     if (m.isGroup) {

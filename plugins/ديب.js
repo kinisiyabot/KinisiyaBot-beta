@@ -1,5 +1,5 @@
 import axios from "axios";
-import baileys from "baileys-pro";
+import * as baileys from "@whiskeysockets/baileys";
 const { generateWAMessageFromContent, proto } = baileys;
 
 let handler = async (m, { conn, text, command }) => {

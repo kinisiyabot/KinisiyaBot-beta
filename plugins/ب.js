@@ -1,4 +1,4 @@
-import pkg from "baileys-pro";
+import * as pkg from "@whiskeysockets/baileys";
 import fs from "fs";
 import { promisify } from "util";
 import cp from "child_process";

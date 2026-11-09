@@ -1,4 +1,4 @@
-let WAMessageStubType = (await import(global.baileys)).default
+let WAMessageStubType = await import(global.baileys)
 
 export async function before(m, { conn, participants, groupMetadata }) {
 if (!m.messageStubType || !m.isGroup) return

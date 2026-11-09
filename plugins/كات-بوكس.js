@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import { fileTypeFromBuffer } from 'file-type';
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 import fs from 'fs';
 import axios from 'axios';
 

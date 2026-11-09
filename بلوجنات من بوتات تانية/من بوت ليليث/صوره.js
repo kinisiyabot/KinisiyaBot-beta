@@ -8,7 +8,7 @@ const {
 
   proto
 
-} = (await import("@whiskeysockets/baileys")).default;
+} = await import("@whiskeysockets/baileys");
 
 let handler = async (message, { conn, text, usedPrefix, command }) => {
 

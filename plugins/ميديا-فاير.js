@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { mediafiredl } from '@bochilteam/scraper'
-import pkg from 'baileys-pro'
+import * as pkg from '@whiskeysockets/baileys'
 const { generateWAMessageFromContent, prepareWAMessageMedia } = pkg
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner, isPrems }) => {

@@ -3,7 +3,7 @@
 // • Channel : https://whatsapp.com/channel/0029Vb80wch30LKFioKenc2V
 
 import fetch from 'node-fetch'
-import pkg from 'baileys-pro'
+import * as pkg from '@whiskeysockets/baileys'
 const { proto, generateWAMessageFromContent, generateWAMessageContent } = pkg
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {

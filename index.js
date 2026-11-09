@@ -32,20 +32,20 @@ import { Boom } from '@hapi/boom';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
-const { proto } = (await import('baileys-pro')).default;
+const { proto } = await import('@whiskeysockets/baileys');
 import pkg from 'google-libphonenumber';
 const { PhoneNumberUtil } = pkg;
 const phoneUtil = PhoneNumberUtil.getInstance();
 const { 
     DisconnectReason, 
     useMultiFileAuthState, 
-    MessageRetryMap, 
     fetchLatestBaileysVersion, 
     makeCacheableSignalKeyStore, 
     jidNormalizedUser 
-} = await import('baileys-pro');
+} = await import('@whiskeysockets/baileys');
 import readline, { createInterface } from 'readline';
 import NodeCache from 'node-cache';
+import QRCode from 'qrcode';
 import os from 'os';
 import cp from 'child_process';
 
@@ -162,7 +162,6 @@ console.info = () => {};
 // Opciones de conexion para Baileys
 const connectionOptions = {
     logger: pino({ level: 'silent' }),
-    printQRInTerminal: opcion == '1' ? true : methodCodeQR ? true : false,
     mobile: MethodMobile,
     browser: opcion == '1' ? [`${global.nameqr}`, 'Edge', '20.0.04'] : methodCodeQR ? [`${global.nameqr}`, 'Edge', '20.0.04'] : ['Ubuntu', 'Edge', '110.0.1587.56'],
     auth: {
@@ -183,6 +182,10 @@ const connectionOptions = {
 };
 
 global.conn = makeWASocket(connectionOptions);
+// سجّل مستمع اتصال مباشرةً بعد إنشاء الجلسة، لأن حدث QR/الاتصال يصل
+// بسرعة (أقل من ثانية) بينما تحميل البلوجنات يستغرق وقتاً طويلاً.
+conn.connectionUpdate = connectionUpdate;
+conn.ev.on('connection.update', conn.connectionUpdate);
 conn.ev.on("creds.update", saveCreds);
 
 // Manejador del codigo de emparejamiento (pairing code)
@@ -238,9 +241,12 @@ async function connectionUpdate(update) {
         global.timestamp.connect = new Date();
     }
     if (global.db.data == null) loadDatabase();
-    if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
-        if (opcion == '1' || methodCodeQR) {
-            console.log(chalk.green.bold(`[ 🌊 ]  Please scan this QR code`));
+    if (update.qr) {
+        console.log(chalk.green.bold(`[ 🌊 ]  Please scan this QR code`));
+        try {
+            console.log(await QRCode.toString(update.qr, { type: 'terminal', small: true }));
+        } catch (e) {
+            console.error('QR render error:', e.message);
         }
     }
     if (connection === "open") {
@@ -284,6 +290,7 @@ global.reloadHandler = async function(restatConn) {
     if (!isInit) {
         conn.ev.off('messages.upsert', conn.handler);
         conn.ev.off('connection.update', conn.connectionUpdate);
+        conn.ev.off('connection.update', connectionUpdate);
         conn.ev.off('creds.update', conn.credsUpdate);
     }
     conn.handler = handler.handler.bind(global.conn);
@@ -335,7 +342,7 @@ if (global.freddyJadibts) {
 }
 
 // Sistema de plugins con recarga en caliente
-const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
+const pluginFolder = global.__dirname(join(__dirname, './plugins'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 

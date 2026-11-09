@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { prepareWAMessageMedia } from 'baileys-pro';
+import { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 
 let usageLimits = {};
 

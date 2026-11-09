@@ -1,4 +1,4 @@
-import baileys from "baileys-pro";
+import * as baileys from "@whiskeysockets/baileys";
 import axios from "axios";
 import FormData from "form-data";
 

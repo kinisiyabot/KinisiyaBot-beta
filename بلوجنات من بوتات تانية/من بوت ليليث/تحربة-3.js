@@ -1,5 +1,5 @@
 
-import pkg from '@whiskeysockets/baileys';
+import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
 function clockString(ms) {

@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent } from 'baileys-pro'
+import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys'
 
 const timeout = 60000
 const poin = 2000

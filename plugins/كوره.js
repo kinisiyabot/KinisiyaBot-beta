@@ -2,7 +2,7 @@ import axios from "axios";
 import cheerio from "cheerio";
 import https from "https";
 import fetch from "node-fetch";
-import baileys from "baileys-pro";
+import * as baileys from "@whiskeysockets/baileys";
 
 const { prepareWAMessageMedia, generateWAMessageFromContent, proto } = baileys;
 

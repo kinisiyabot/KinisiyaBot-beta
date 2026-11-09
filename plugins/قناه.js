@@ -1,4 +1,4 @@
-import { generateWAMessageFromContent } from 'baileys-pro';
+import { generateWAMessageFromContent } from '@whiskeysockets/baileys';
 
 let handler = async (m, { text, conn }) => {
   if (!text) return m.reply('الرجاء إدخال رابط القناة.');

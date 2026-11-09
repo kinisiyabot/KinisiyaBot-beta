@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { prepareWAMessageMedia, generateWAMessageFromContent, proto } from 'baileys-pro'
+import { prepareWAMessageMedia, generateWAMessageFromContent, proto } from '@whiskeysockets/baileys'
 import { performance } from 'perf_hooks'
 
 const menuCategories = {

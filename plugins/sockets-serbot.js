@@ -5,7 +5,7 @@ prepareWAMessageMedia,
 generateWAMessageFromContent, 
 makeCacheableSignalKeyStore, 
 fetchLatestBaileysVersion
- } from 'baileys-pro';
+ } from '@whiskeysockets/baileys';
 import qrcode from "qrcode"
 import NodeCache from "node-cache"
 import fs from "fs"
@@ -14,7 +14,7 @@ import pino from 'pino'
 import chalk from 'chalk'
 import util from 'util' 
 import * as ws from 'ws'
-import { getDevice } from 'baileys-pro'
+import { getDevice } from '@whiskeysockets/baileys'
 
 // دالــة الــتــرجــمــة مــع قــيــمــة افــتــراضــيــة
 const tr = text => text || "نــص افــتــراضــي";

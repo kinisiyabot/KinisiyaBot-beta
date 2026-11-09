@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 const { prepareWAMessageMedia, generateWAMessageFromContent, proto } = baileys;
 
 // 🖼️ تجهيز الصور

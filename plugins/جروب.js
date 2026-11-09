@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent } from 'baileys-pro';
+import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys';
 
 let handler = async (m, { conn, args, usedPrefix, command, isAdmin, isOwner }) => {
     // التحقق من أن المستخدم مشرف أو مالك

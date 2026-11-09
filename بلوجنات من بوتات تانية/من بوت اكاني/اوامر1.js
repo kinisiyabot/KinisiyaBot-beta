@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import pkg from '@whiskeysockets/baileys';
+import * as pkg from '@whiskeysockets/baileys';
 
 const { generateWAMessageFromContent, prepareWAMessageMedia } = pkg;
 

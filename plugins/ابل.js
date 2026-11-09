@@ -1,6 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
-const { generateWAMessageFromContent, prepareWAMessageMedia } = (await import('baileys-pro')).default;
+const { generateWAMessageFromContent, prepareWAMessageMedia } = await import('@whiskeysockets/baileys');
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`🍷 اكتب اسم الأغنية أو الفنان.\n\nمثال:\n${usedPrefix + command} Joji - Glimpse of Us`);

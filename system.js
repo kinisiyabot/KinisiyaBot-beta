@@ -6,6 +6,7 @@ https://console.groq.com/keys?utm_source=chatgpt.com
 */
 
 import { loadMemory, saveMemory } from './lib/memory.js'
+import { matchesAny, toNumber } from './lib/identity.js'
 import fetch from 'node-fetch'
 import path from 'path'
 
@@ -58,7 +59,7 @@ async function loadProtectionLists() {
   try {
     const elitePath = path.resolve('./lib/n5bah/elite.js')
     const eliteData = await import(`file://${elitePath}`)
-    const rawElite = eliteData.default || eliteData.elite || []
+    const rawElite = eliteData.eliteNumbers || eliteData.default || eliteData.elite || []
     elite = Array.isArray(rawElite) ? rawElite : [rawElite]
   } catch (err) {
     console.error('Error loading elite.js:', err.message)
@@ -182,20 +183,9 @@ async function safeFetch(url, options, retries = DEFAULTS.maxRetries) {
 }
 
 export async function isProtectedUser(jid) {
+  if (!toNumber(jid)) return false
   const { owners, elite } = await loadProtectionLists()
-  const formattedJid = String(jid).replace(/[^0-9]/g, '')
-
-  const isOwner = owners.some(o => {
-    const raw = Array.isArray(o) ? o[0] : o
-    return String(raw).replace(/[^0-9]/g, '') === formattedJid
-  })
-
-  const isElite = elite.some(e => {
-    const raw = Array.isArray(e) ? e[0] : e
-    return String(raw).replace(/[^0-9]/g, '') === formattedJid
-  })
-
-  return isOwner || isElite
+  return matchesAny(jid, owners) || matchesAny(jid, elite)
 }
 
 export async function processAiRequest(prompt, senderJid, extraOptions = {}) {

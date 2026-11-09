@@ -1,5 +1,5 @@
 import yts from "yt-search";
-import { prepareWAMessageMedia, generateWAMessageFromContent, proto } from "baileys-pro";
+import { prepareWAMessageMedia, generateWAMessageFromContent, proto } from "@whiskeysockets/baileys";
 
 let handler = async (m, { conn, text }) => {
   if (!text) return conn.sendMessage(

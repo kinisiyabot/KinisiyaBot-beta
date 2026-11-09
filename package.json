@@ -40,7 +40,7 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@vitalets/google-translate-api": "^8.0.0",
-    "baileys-pro": "github:mzml-gg/baileys-by-hulk",
+    "@whiskeysockets/baileys": "^6.7.24",
     "acrcloud": "^1.4.0",
     "aptoide-scraper": "github:DIEGO-OFC/dv-aptoide-scraper",
     "awesome-phonenumber": "^3.4.0",

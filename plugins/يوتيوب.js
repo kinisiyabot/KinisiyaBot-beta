@@ -1,5 +1,5 @@
 import yts from 'yt-search'
-import pkg from 'baileys-pro'
+import * as pkg from '@whiskeysockets/baileys'
 import fetch from 'node-fetch'
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg
 

@@ -1,4 +1,4 @@
-import pkg from 'baileys-pro'
+import * as pkg from '@whiskeysockets/baileys'
 import fs from 'fs'
 import fetch from 'node-fetch'
 import axios from 'axios'

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import pkg from 'baileys-pro';
+import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
 let handler = async (m, { conn, text }) => {

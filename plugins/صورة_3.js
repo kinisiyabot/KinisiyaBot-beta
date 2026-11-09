@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from 'baileys-pro';
+import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
 import { googleImage } from '@bochilteam/scraper';
 
 const handler = async (m, { conn, text, usedPrefix }) => {

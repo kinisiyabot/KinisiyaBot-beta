@@ -1,6 +1,6 @@
 // @type {import('@soymaycol/maybailyes')}
 
-const { proto, generateWAMessage, areJidsSameUser, decryptPollVote, } = (await import('@soymaycol/maybailyes')).default;
+const { proto, generateWAMessage, areJidsSameUser, decryptPollVote, } = await import('@soymaycol/maybailyes');
 export async function all(m, chatUpdate) {
 if (m.isBaileys) {
 return
@@ -93,7 +93,7 @@ this.ev.emit('messages.upsert', msg)
   proto,
   generateWAMessage,
   areJidsSameUser
-} = (await import('@soymaycol/maybailyes')).default
+} = await import('@soymaycol/maybailyes')
 export async function all(m, chatUpdate) {
   try {
     if (m.isBaileys) return

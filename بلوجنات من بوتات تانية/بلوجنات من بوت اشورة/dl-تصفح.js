@@ -3,7 +3,7 @@ const {
   generateWAMessageContent,
   generateWAMessageFromContent,
   proto
-} = (await import("@soymaycol/maybailyes")).default;
+} = await import("@soymaycol/maybailyes");
 
 let handler = async (message, { conn, text, usedPrefix, command }) => {
   if (!text) {

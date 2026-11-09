@@ -3,7 +3,7 @@
 // for esm: https://t.me/yertchi_kunusua
 
 import fetch from "node-fetch";
-import { generateWAMessageFromContent, prepareWAMessageMedia } from "baileys-pro";
+import { generateWAMessageFromContent, prepareWAMessageMedia } from "@whiskeysockets/baileys";
 
 const API_BASE = "https://apex-api-five.vercel.app/api/v1";
 const IMAGE_URL = "https://i.postimg.cc/w1hX9VmR/upload-1765388016764.jpg";
