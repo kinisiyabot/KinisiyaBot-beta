@@ -5,7 +5,7 @@ function clockString(ms) {
     return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
 }
 
-import pkg from '@whiskeysockets/baileys';
+import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, prepareWAMessageMedia } = pkg;
 
 const handler = async (m, { conn }) => {

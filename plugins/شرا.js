@@ -1,6 +1,6 @@
 import fs from "fs";
 import axios from "axios";
-import baileys from "baileys-pro";
+import * as baileys from "@whiskeysockets/baileys";
 const { prepareWAMessageMedia, generateWAMessageFromContent, proto } = baileys;
 
 const IMG_PATH = "./media/a1a6fff7242dc17877210c3974019c0f.jpg"; // صورة ثابتة للباقة

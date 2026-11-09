@@ -2,7 +2,7 @@
 // • Channel : https://whatsapp.com/channel/0029Vb80wch30LKFioKenc2V
 import axios from "axios";
 import crypto from "crypto";
-import pkg from "baileys-pro";
+import * as pkg from "@whiskeysockets/baileys";
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
 const BASE_URL = "https://apex-api-five.vercel.app/"; // ✅ API الخاص بك

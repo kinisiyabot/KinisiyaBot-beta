@@ -1,4 +1,4 @@
-import pkg from 'baileys-pro';
+import * as pkg from '@whiskeysockets/baileys';
 const { proto, generateWAMessageFromContent, generateWAMessageContent } = pkg;
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {

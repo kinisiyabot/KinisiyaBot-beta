@@ -1,4 +1,4 @@
-.gps اوامر|import pkg from '@whiskeysockets/baileys';
+.gps اوامر|import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
 function clockString(ms) {

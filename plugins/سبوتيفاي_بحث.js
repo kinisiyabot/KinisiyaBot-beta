@@ -1,5 +1,5 @@
 import axios from 'axios';
-const { generateWAMessageContent, generateWAMessageFromContent, proto } = (await import("baileys-pro")).default;
+const { generateWAMessageContent, generateWAMessageFromContent, proto } = await import("@whiskeysockets/baileys");
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) throw `🔴 لازم تدخل اسم الفنان أو الأغنية!\n🔹 مثال:\n${usedPrefix + command} tini`;

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 import { sticker } from '../lib/sticker.js';
 import uploadFile from '../lib/uploadFile.js';
 import uploadImage from '../lib/uploadImage.js';

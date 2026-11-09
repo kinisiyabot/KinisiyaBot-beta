@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import * as cheerio from "cheerio";
 import fs from "fs";
-import { generateWAMessageFromContent, prepareWAMessageMedia } from "baileys-pro";
+import { generateWAMessageFromContent, prepareWAMessageMedia } from "@whiskeysockets/baileys";
 
 class SoundCloudHandler {
     constructor() {

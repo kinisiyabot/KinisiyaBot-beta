@@ -1,4 +1,5 @@
 import { smsg } from "./lib/simple.js"
+import { matchesAny, learnIdentity, sameIdentity } from "./lib/identity.js"
 import { format } from "util"
 import { fileURLToPath } from "url"
 import path, { join } from "path"
@@ -30,6 +31,17 @@ export async function handler(chatUpdate) {
     m = smsg(this, m) || m
     if (!m) return
     m.exp = 0
+
+    // تعلّم مرادفات الهوية (رقم الهاتف <-> الـ LID) من مفتاح الرسالة، حتى
+    // تنجح مقارنات المطور/النخبة حتى لو أرسل المرسل بمعرّف واحد فقط.
+    learnIdentity(
+      m.sender,
+      m.key?.participant,
+      m.key?.participantPn,
+      m.key?.participantLid,
+      m.key?.senderPn,
+      m.key?.senderLid
+    )
 
     try {
       // User Database Initialization
@@ -145,19 +157,13 @@ export async function handler(chatUpdate) {
     const settings = global.db.data.settings[this.user.jid]  
     
     // تحويل العناصر إلى نصوص بشكل آمن
-    const isROwner = [...(global.owner || [])
-      .map(v => (Array.isArray(v) ? v[0] : v))
-      .filter(v => v)
-      .map(v => String(v).replace(/[^0-9]/g, "") + "@s.whatsapp.net")
-    ].includes(m.sender)
+    // نطابق عبر aliases (رقم الهاتف <-> الـ LID) حتى لا يفشل التعرف على
+    // المطور عندما لا يظهر إلا الـ LID، ويفشل بأمان إذا لم يُحل المعرّف.
+    const isROwner = matchesAny(m.sender, global.owner || [])
 
     const isOwner = isROwner
 
-    const isPrems = isROwner || [...(global.prems || [])
-      .map(v => (Array.isArray(v) ? v[0] : v))
-      .filter(v => v)
-      .map(v => String(v).replace(/[^0-9]/g, "") + "@s.whatsapp.net")
-    ].includes(m.sender) || user.premium
+    const isPrems = isROwner || matchesAny(m.sender, global.prems || []) || user.premium
 
     const opts = global.opts || {}
     if (opts["queque"] && m.text && !isPrems) {
@@ -198,8 +204,10 @@ export async function handler(chatUpdate) {
     let usedPrefix
     const groupMetadata = m.isGroup ? { ...(this.chats?.[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null) || {}) } : {}
     const participants = (m.isGroup ? groupMetadata.participants : []) || []
-    const userGroup = (m.isGroup ? participants.find((u) => this.decodeJid(u.id || u.jid) === m.sender) : {}) || {}
-    const botGroup = (m.isGroup ? participants.find((u) => this.decodeJid(u.id || u.jid) === this.user.jid) : {}) || {}
+    // سجّل مرادفات هوية كل عضو (id/jid/lid) لتفادي فشل المطابقة بسبب LID.
+    for (const p of participants) learnIdentity(p, p?.id, p?.jid, p?.lid)
+    const userGroup = (m.isGroup ? participants.find((u) => sameIdentity(this.decodeJid(u.id || u.jid || u.lid), m.sender)) : {}) || {}
+    const botGroup = (m.isGroup ? participants.find((u) => sameIdentity(this.decodeJid(u.id || u.jid || u.lid), this.user.jid)) : {}) || {}
     
     const isRAdmin = userGroup?.admin === "superadmin"
     const isAdmin = isRAdmin || userGroup?.admin === "admin"
@@ -440,7 +448,7 @@ export async function handler(chatUpdate) {
     }
 
     try {
-      if (!opts["noprint"]) await (await import("./lib/print.js")).default(m, this)
+      if (!opts["noprint"]) await await import("./lib/print.js")(m, this)
     } catch (err) {
       console.warn(err)
     }

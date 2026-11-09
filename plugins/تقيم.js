@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from 'baileys-pro';
+import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
 
 const handler = async (message, { conn, text, usedPrefix }) => { 
     const deviceType = await getDevice(message.key.id);

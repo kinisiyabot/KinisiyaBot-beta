@@ -6,7 +6,7 @@ const {
   generateWAMessage,
   areJidsSameUser,
   decryptPollVote,
-} = (await import('@whiskeysockets/baileys')).default;
+} = await import('@whiskeysockets/baileys');
 
 export async function all(m, chatUpdate) {
   /* if (m.message.pollUpdateMessage) {
@@ -123,7 +123,7 @@ export async function all(m, chatUpdate) {
   generateWAMessage,
   areJidsSameUser,
   decryptPollVote,
-} = (await import('@whiskeysockets/baileys')).default;
+} = await import('@whiskeysockets/baileys');
 
 export async function all(m, chatUpdate) {
   if (m.isBaileys) {

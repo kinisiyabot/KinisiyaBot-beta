@@ -1,6 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = baileys;
 
 let handler = async (m, { conn, text }) => {

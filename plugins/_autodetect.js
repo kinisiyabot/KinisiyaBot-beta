@@ -1,4 +1,4 @@
-import { WAMessageStubType } from 'baileys-pro';
+import { WAMessageStubType } from '@whiskeysockets/baileys';
 
 export async function before(m, { conn, participants, groupMetadata }) {
     if (!m.messageStubType ||!m.isGroup) return;

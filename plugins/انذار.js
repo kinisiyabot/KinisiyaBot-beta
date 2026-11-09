@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import baileys from 'baileys-pro'
+import * as baileys from '@whiskeysockets/baileys'
 const { jidDecode } = baileys
 const { generateWAMessageFromContent, proto } = baileys
 

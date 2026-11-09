@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import baileys from 'baileys-pro';
+import * as baileys from '@whiskeysockets/baileys';
 
 const { proto, generateWAMessageFromContent } = baileys;
 

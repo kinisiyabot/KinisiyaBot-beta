@@ -1,4 +1,4 @@
-import { generateWAMessageFromContent } from 'baileys-pro'
+import { generateWAMessageFromContent } from '@whiskeysockets/baileys'
 let handler = async (m, { conn, text, participants, isOwner, isAdmin }) => {
 let fakegif = { key: {participant: `0@s.whatsapp.net`, ...("6289643739077-1613049930@g.us" ? { remoteJid: "6289643739077-1613049930@g.us" } : {})},message: {"videoMessage": { "title": '🍺༄𝐈𝐌 𝐘𝐄𝐑𝐈𝐓𝐂𝐇𝐈༆🍻', "h": `Hmm`,'seconds': '99999', 'gifPlayback': 'true', 'caption': '⏤͟͞ू⃪ 𝑲𝑰𝑵𝑰𝑺𝑰𝒀𝑨𖤐', 'jpegThumbnail': true }}}
 let users = participants.map(u => conn.decodeJid(u.id))

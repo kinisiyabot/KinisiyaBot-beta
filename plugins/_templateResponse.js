@@ -1,7 +1,7 @@
 /**
- * @type {import('baileys-pro')}
+ * @type {import('@whiskeysockets/baileys')}
  */
-const {proto, generateWAMessage, areJidsSameUser} = (await import('baileys-pro')).default
+const {proto, generateWAMessage, areJidsSameUser} = await import('@whiskeysockets/baileys')
 
 export async function all(m, chatUpdate) {
 if (m.isBaileys || !m.message) return

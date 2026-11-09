@@ -3,7 +3,7 @@
 import axios from 'axios'
 import FormData from 'form-data'
 
-import pkg from 'baileys-pro'
+import * as pkg from '@whiskeysockets/baileys'
 const { generateWAMessageContent, generateWAMessageFromContent, proto } = pkg
 
 // دالة رفع الصورة إلى Catbox

@@ -2,7 +2,7 @@ const {
     proto,
     generateWAMessage,
     areJidsSameUser
-} = (await import('@soymaycol/maybailyes')).default
+} = await import('@soymaycol/maybailyes')
 
 export async function all(m, chatUpdate) {
     // Verificaciones básicas

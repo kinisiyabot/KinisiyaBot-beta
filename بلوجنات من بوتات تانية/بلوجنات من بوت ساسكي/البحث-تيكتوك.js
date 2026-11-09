@@ -1,5 +1,5 @@
 import axios from 'axios'
-const {proto, generateWAMessageFromContent, prepareWAMessageMedia, generateWAMessageContent, getDevice} = (await import("@whiskeysockets/baileys")).default
+const {proto, generateWAMessageFromContent, prepareWAMessageMedia, generateWAMessageContent, getDevice} = await import("@whiskeysockets/baileys")
 
 let handler = async (message, { conn, text, usedPrefix, command }) => {
 if (!text) return conn.reply(message.chat, '[❗️] *فين النص اللي هتبحث عنو ف تيكتوك ي حوب 🧞*', message)

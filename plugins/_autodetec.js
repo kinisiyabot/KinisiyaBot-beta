@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-let WAMessageStubType = (await import('baileys-pro')).default
+let WAMessageStubType = await import('@whiskeysockets/baileys')
 import { existsSync, promises as fs, readdirSync, rmSync, unlinkSync } from 'fs'
 import path from 'path'
 import './_content.js'

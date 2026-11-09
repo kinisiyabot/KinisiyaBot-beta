@@ -1,4 +1,4 @@
-.gps تتت|import pkg from '@whiskeysockets/baileys';
+.gps تتت|import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
 function clockString(ms) {

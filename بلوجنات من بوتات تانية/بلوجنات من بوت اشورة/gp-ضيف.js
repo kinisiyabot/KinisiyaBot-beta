@@ -1,6 +1,6 @@
-const {generateWAMessageFromContent, prepareWAMessageMedia, proto} = (await import('@soymaycol/maybailyes')).default;
+const {generateWAMessageFromContent, prepareWAMessageMedia, proto} = await import('@soymaycol/maybailyes');
 import fetch from 'node-fetch';
-const {getBinaryNodeChild, getBinaryNodeChildren} = (await import('@soymaycol/maybailyes')).default;
+const {getBinaryNodeChild, getBinaryNodeChildren} = await import('@soymaycol/maybailyes');
 const handler = async (m, {conn, text, participants, args}) => {
   const datas = global
 

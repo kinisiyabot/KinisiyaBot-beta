@@ -1,6 +1,6 @@
 import { readdirSync, unlinkSync, existsSync, writeFileSync, readFileSync } from 'fs';
 import path from 'path';
-import { prepareWAMessageMedia } from 'baileys-pro';
+import { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 import fs from 'fs';
 
 const handler = async (m, { conn, usedPrefix, text }) => {

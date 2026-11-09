@@ -1,4 +1,4 @@
-import pkg from 'baileys-pro';
+import * as pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = pkg;
 
 let defaultLimit = {};

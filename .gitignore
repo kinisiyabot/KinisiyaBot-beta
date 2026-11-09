@@ -1,0 +1,6 @@
+node_modules/
+session/
+jadi/
+memory.json
+*.log
+.env
