@@ -26,13 +26,28 @@ termux-setup-storage
 apt update && apt upgrade && pkg install -y git nodejs ffmpeg imagemagick
 ```
 
+**نزّل البوت من جيت هب:**
+
 ```bash
-cd /sdcard/.bot/bot
+cd /sdcard/.bot
+git clone https://github.com/kinisiyabot/KinisiyaBot-beta.git bot
+cd bot
 ```
+
+**نزّل المكتبات:**
+
+```bash
+npm install
+```
+
+**شغّل البوت:**
 
 ```bash
 npm start
 ```
+
+> 🔧 **مكان الـ API:** في ملف `lib/config.js` — غيّر `DEFAULT_API_BASE` من هناك،
+> أو شغّل بـ `API_BASE=https://... npm start`.
 
 
 ```bash
