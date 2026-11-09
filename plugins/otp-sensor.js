@@ -13,7 +13,7 @@ let handler = async (m, { conn }) => {
     try {
         await global.loading(m, conn) // تشغيل Loading
 
-        const API_URL = 'https://apex-api-five.vercel.app/api/blackwave/otp'
+        const API_URL = '' + global.API_BASE + '/api/blackwave/otp'
         const API_KEY = process.env.OTP_API_KEY
 
         // تشغيل المستشعر لتشغيل GET كل فترة

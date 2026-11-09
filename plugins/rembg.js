@@ -58,7 +58,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       text: `⏳ *جاري إزالة الخلفية...*`
     }, { quoted: m });
 
-    const apiUrl = `https://apex-api-five.vercel.app/api/v1/tools/rb?imageUrl=${encodeURIComponent(imageUrl)}`;
+    const apiUrl = `${global.API_BASE}/api/v1/tools/rb?imageUrl=${encodeURIComponent(imageUrl)}`;
     
     let response;
     for (let attempt = 1; attempt <= 3; attempt++) {

@@ -13,7 +13,7 @@ export async function before(m, { conn }) {
       if (!imageUrl) throw new Error('فشل في رفع الصورة.')
 
       // 🔍 فحص الصورة عبر API
-      const res = await axios.get(`https://apex-api-five.vercel.app/api/v1/tools/check_porn?imageUrl=${encodeURIComponent(imageUrl)}`)
+      const res = await axios.get(`${global.API_BASE}/api/v1/tools/check_porn?imageUrl=${encodeURIComponent(imageUrl)}`)
       const result = res.data.result
 
       if (!result || !result.labelName) {

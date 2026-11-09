@@ -47,7 +47,7 @@ let handler = async (m, { conn }) => {
 
     // البحث باستخدام Pinterest Lens
     const { data } = await axios.get(
-      `https://apex-api-five.vercel.app/api/v1/search/pinlens?imageUrl=${encodeURIComponent(imageUrl)}`
+      `${global.API_BASE}/api/v1/search/pinlens?imageUrl=${encodeURIComponent(imageUrl)}`
     )
 
     if (!data?.status || !data?.results || data.results.length === 0) {

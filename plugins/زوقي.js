@@ -11,7 +11,7 @@ let handler = async (m, { conn }) => {
 اكتب الرد بالعربية وبأسلوب لطيف.
 `;
 
-    let url = `https://apex-api-five.vercel.app/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`;
+    let url = `${global.API_BASE}/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`;
 
     let { data } = await axios.get(url);
 

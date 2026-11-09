@@ -18,7 +18,7 @@ ${usedPrefix}${command} <كلمة البحث>
         }
 
         const query = encodeURIComponent(args.join(' '));
-        const apiUrl = `https://apex-api-five.vercel.app/api/v1/search/tiktok?text=${query}`;
+        const apiUrl = `${global.API_BASE}/api/v1/search/tiktok?text=${query}`;
 
         await conn.reply(m.chat, '⏳ جاري البحث في تيك توك ...', m);
 

@@ -19,7 +19,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
         // لو عايز تضيف تحميل فيديوهات تيك توك باستخدام نفس البحث
         const query = encodeURIComponent(searchText);
-        const apiUrl = `https://apex-api-five.vercel.app/api/v1/search/tiktok?text=${query}`;
+        const apiUrl = `${global.API_BASE}/api/v1/search/tiktok?text=${query}`;
 
         await conn.reply(m.chat, '⏳ جاري البحث في تيك توك ...', m);
 

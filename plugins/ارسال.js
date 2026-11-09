@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'https://apex-api-five.vercel.app/api/blackwave/otp'
+const API_URL = '' + global.API_BASE + '/api/blackwave/otp'
 const API_KEY = process.env.OTP_API_KEY
 const delay = ms => new Promise(r => setTimeout(r, ms))
 

@@ -19,7 +19,7 @@ ${command} ما هو الذكاء الاصطناعي؟
     const prompt = `جاوب بالعربية فقط:\n${text}`;
 
     const res = await axios.get(
-      `https://apex-api-five.vercel.app/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`
+      `${global.API_BASE}/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`
     );
 
     if (res.data?.status && res.data?.response) {

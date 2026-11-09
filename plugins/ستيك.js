@@ -22,7 +22,7 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
   let images = [];
 
   try {
-    const res = await axios.get('https://apex-api-five.vercel.app/api/v1/search/pinterest', {
+    const res = await axios.get('' + global.API_BASE + '/api/v1/search/pinterest', {
       params: { query },
       timeout: 10000
     });

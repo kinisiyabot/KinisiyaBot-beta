@@ -4,7 +4,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     if (!text) return m.reply(`🩸 *الاستخدام:* ${usedPrefix + command} <اسم الأغنية>\n📌 مثال: ${usedPrefix + command} 505`)
 
-    const api = `https://apex-api-five.vercel.app/api/v1/search/lyrics?text=${encodeURIComponent(text)}`
+    const api = `${global.API_BASE}/api/v1/search/lyrics?text=${encodeURIComponent(text)}`
     const { data } = await axios.get(api)
 
     if (!data.status) return m.reply('❌ لم يتم العثور على كلمات لهذه الأغنية.')

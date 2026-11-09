@@ -26,7 +26,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     await conn.sendMessage(m.chat, { text: "⌯︙جارِ جلب ميديا إنستجرام، انتظر قليلًا..." });
 
     // طلب من API
-    const apiUrl = `https://apex-api-five.vercel.app/api/v1/download_instagram?url=${encodeURIComponent(text)}`;
+    const apiUrl = `${global.API_BASE}/api/v1/download_instagram?url=${encodeURIComponent(text)}`;
     const { data } = await axios.get(apiUrl);
 
     if (!data.status || !data.download_url) {

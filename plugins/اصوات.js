@@ -83,7 +83,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
     await m.reply("⏳ جاري توليد الصوت...");
 
     // Dark API
-    const apiUrl = `https://apex-api-five.vercel.app/api/v1/ai/AI-elevenlabs?voice=${encodeURIComponent(voiceName)}&text=${encodeURIComponent(text)}`;
+    const apiUrl = `${global.API_BASE}/api/v1/ai/AI-elevenlabs?voice=${encodeURIComponent(voiceName)}&text=${encodeURIComponent(text)}`;
     const response = await fetch(apiUrl, { timeout: 60000 });
 
     if (!response.ok) {

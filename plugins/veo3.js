@@ -53,7 +53,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     );
 
     // 🔥 بناء رابط API ديناميكي
-    let apiURL = `https://apex-api-five.vercel.app/api/v1/ai/veo3pro?prompt=${encodeURIComponent(
+    let apiURL = `${global.API_BASE}/api/v1/ai/veo3pro?prompt=${encodeURIComponent(
       prompt
     )}`;
     if (imageUrl) apiURL += `&imageUrl=${encodeURIComponent(imageUrl)}`;

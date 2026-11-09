@@ -5,7 +5,7 @@ import crypto from "crypto";
 import * as pkg from "@whiskeysockets/baileys";
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
-const BASE_URL = "https://apex-api-five.vercel.app/"; // ✅ API الخاص بك
+const BASE_URL = "" + global.API_BASE + "/"; // ✅ API الخاص بك
 
 let handler = async function (m, { text, conn }) {
   if (!text)

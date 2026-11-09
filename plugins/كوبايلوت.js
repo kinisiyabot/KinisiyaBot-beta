@@ -26,7 +26,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     })
 
     // جلب الرد من API
-    const res = await fetch(`https://apex-api-five.vercel.app/api/v1/ai/copilot?prompt=${encodeURIComponent(prompt)}&model=${model}`)
+    const res = await fetch(`${global.API_BASE}/api/v1/ai/copilot?prompt=${encodeURIComponent(prompt)}&model=${model}`)
     const data = await res.json()
 
     if (!data.status) throw new Error("❌ فشل في الحصول على الرد من الخادم.")

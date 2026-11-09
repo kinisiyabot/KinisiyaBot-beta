@@ -19,7 +19,7 @@ ${usedPrefix}${command} <كلمة البحث>
     }
 
     const query = encodeURIComponent(args.join(' '))
-    const searchUrl = `https://apex-api-five.vercel.app/api/v1/search/instagram?query=${query}`
+    const searchUrl = `${global.API_BASE}/api/v1/search/instagram?query=${query}`
 
     await conn.reply(m.chat, '⏳ جاري البحث في إنستغرام ...', m)
 
@@ -33,7 +33,7 @@ ${usedPrefix}${command} <كلمة البحث>
     const cards = await Promise.all(
       data.results.slice(0, 3).map(async (url) => {
         try {
-          const dl = await fetch(`https://apex-api-five.vercel.app/api/v1/download/instagram?url=${url}`)
+          const dl = await fetch(`${global.API_BASE}/api/v1/download/instagram?url=${url}`)
           const contentType = dl.headers.get('content-type')
 
           let videoUrl = null
@@ -45,7 +45,7 @@ ${usedPrefix}${command} <كلمة البحث>
             if (j.result?.caption) caption = j.result.caption
           } else if (contentType.includes('video')) {
             // API أعاد فيديو مباشر
-            videoUrl = `https://apex-api-five.vercel.app/api/v1/download/instagram?url=${url}`
+            videoUrl = `${global.API_BASE}/api/v1/download/instagram?url=${url}`
           }
 
           if (!videoUrl) return null

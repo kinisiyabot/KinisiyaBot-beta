@@ -67,6 +67,7 @@ export async function handler(chatUpdate) {
         if (!("afk" in user) || !isNumber(user.afk)) user.afk = -1
         if (!("afkReason" in user)) user.afkReason = ""
         if (!("warn" in user) || !isNumber(user.warn)) user.warn = 0
+        if (!("lang" in user)) user.lang = ""
       } else {
         global.db.data.users[m.sender] = {
           name: m.name || "",
@@ -87,7 +88,8 @@ export async function handler(chatUpdate) {
           commands: 0,
           afk: -1,
           afkReason: "",
-          warn: 0
+          warn: 0,
+          lang: ""
         }
       }
 

@@ -26,7 +26,7 @@ let handler = async function (m, { conn }) {
 ${m.text}
 `
 
-    let url = `https://apex-api-five.vercel.app/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`
+    let url = `${global.API_BASE}/api/v1/ai/gemini?prompt=${encodeURIComponent(prompt)}`
     let res = await axios.get(url)
 
     let reply = res.data?.response || "مش سامعاك قوي 🥲"
