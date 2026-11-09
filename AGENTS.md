@@ -46,3 +46,14 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
 - `lib/i18n.js` holds menu strings for Arabic/English/Spanish; `plugins/menu.js`
   shows a language picker on first use and builds sections dynamically from the
   plugins that actually register a `.قسم_<id>` command.
+
+- **Changing the API base**: it lives in exactly one place — `lib/config.js`
+  (`DEFAULT_API_BASE`), exposed as `global.API_BASE` and overridable with the
+  `API_BASE` env var. 37 plugins read it; do not hardcode hosts in plugins.
+  The default host (apex) is dead (HTTP 402), so it must be repointed.
+- **Command names must be unique across plugins.** The dispatcher runs *every*
+  matching plugin (no `break`), so a name registered twice replies twice. Run
+  `npm run audit:plugins` after adding/renaming commands — it fails on load
+  errors and lists duplicate command names.
+- A plugin may `export default` a single handler, an array of handlers, or a
+  named `handler`; `lib/plugin-loader.js` normalizes all three.
