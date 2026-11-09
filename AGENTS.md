@@ -36,3 +36,13 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
 - The `connection.update` listener must be registered before the slow
   `filesInit()` plugin scan, otherwise the first QR event is missed.
 - Runtime data (`session/`, `jadi/`, `memory.json`) is gitignored.
+- Buttons: `plugins/_templateResponse.js` converts a button/list tap back into a
+  text command and re-emits `messages.upsert`. Menu buttons only work if their
+  target command id is registered by some plugin, so keep ids in sync with
+  `handler.command` values (e.g. `.قسم_<id>`, `.menu_<lang>`).
+- External HTTP APIs: the base URL is centralized in `lib/config.js`
+  (`global.API_BASE`) and can be overridden with the `API_BASE` env var. Do not
+  hardcode host URLs in plugins — reference `global.API_BASE`.
+- `lib/i18n.js` holds menu strings for Arabic/English/Spanish; `plugins/menu.js`
+  shows a language picker on first use and builds sections dynamically from the
+  plugins that actually register a `.قسم_<id>` command.
