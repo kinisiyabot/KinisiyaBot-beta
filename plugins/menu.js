@@ -23,7 +23,14 @@ export function availableCategories() {
       const m = cmd.source.match(/قسم_([a-zA-Z0-9_]+)/)
       if (m) commands.add(m[1])
     } else if (Array.isArray(cmd)) {
-      for (const c of cmd) if (typeof c === 'string' && c.startsWith('قسم_')) commands.add(c.slice(4))
+      for (const c of cmd) {
+        if (typeof c !== 'string') continue
+        if (c.startsWith('قسم_')) commands.add(c.slice(4))
+        else { const m = c.match(/قسم_([a-zA-Z0-9_]+)/); if (m) commands.add(m[1]) }
+      }
+    } else if (typeof cmd === 'string') {
+      if (cmd.startsWith('قسم_')) commands.add(cmd.slice(4))
+      else { const m = cmd.match(/قسم_([a-zA-Z0-9_]+)/); if (m) commands.add(m[1]) }
     }
   }
   const known = categoryIds().filter(id => commands.has(id))
