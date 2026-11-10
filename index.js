@@ -32,6 +32,7 @@ import { Boom } from '@hapi/boom';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import './lib/config.js';
 import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
+import { selfHeal, installConsoleMonitor, announceRestart } from './lib/self-heal.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
 const { proto } = await import('@whiskeysockets/baileys');
@@ -98,6 +99,9 @@ global.timestamp = { start: new Date() };
 const __dirname = global.__dirname(import.meta.url);
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp('^[#!./-]');
+
+// 🛠️ نظام التصحيح الذاتي: راقب console.error منذ بداية التشغيل.
+if (!global.opts['no-selfheal']) installConsoleMonitor();
 
 // Configuracion de base de datos LowDB
 global.db = new Low(/https?:\/\//.test(global.opts['db'] || '') ? new cloudDBAdapter(global.opts['db']) : new JSONFile('database.json'));
@@ -256,6 +260,7 @@ async function connectionUpdate(update) {
         const userName = conn.user.name || conn.user.verifiedName || "UNKNOWN";
         await joinChannels(conn);
         console.log(chalk.green.bold(`[ 🐍 ]: ${userName} is Connected`));
+        announceRestart().catch(() => {});
     }
     let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
     if (connection === "close") {
@@ -267,7 +272,10 @@ async function connectionUpdate(update) {
     }
 }
 
-process.on('uncaughtException', console.error);
+process.on('uncaughtException', (err) => {
+    selfHeal.capture(err, { type: 'uncaughtException' });
+    console.error(err);
+});
 
 // Sistema de recarga del manejador
 let isInit = true;
@@ -317,6 +325,7 @@ global.reloadHandler = async function(restatConn) {
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error("⚠️ Unhandled rejection detected • Fazbear Alert 🍷", reason);
+    selfHeal.capture(reason instanceof Error ? reason : new Error(String(reason)), { type: 'unhandledRejection' });
 });
 
 // Sistema de sub-bots (JadiBot)

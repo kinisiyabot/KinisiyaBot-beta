@@ -61,3 +61,8 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
 - **API contract**: every plugin that calls the external service and the exact
   response shape it expects is documented in `docs/API.md`. Update it when you
   add or change an API-backed plugin.
+
+- **Self-heal**: `lib/self-heal.js` watches console.error + process errors,
+  notifies owners with a 5-minute yes/no confirmation, and on "yes" reloads the
+  offending plugin and restarts the process. Owner confirmation is handled by
+  `plugins/التصحيح-الذاتي.js`. Disable with `--no-selfheal`.

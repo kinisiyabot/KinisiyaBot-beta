@@ -4,3 +4,4 @@ jadi/
 memory.json
 *.log
 .env
+logs/
