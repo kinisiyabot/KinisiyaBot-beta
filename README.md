@@ -48,6 +48,8 @@ npm start
 
 > 🔧 **مكان الـ API:** في ملف `lib/config.js` — غيّر `DEFAULT_API_BASE` من هناك،
 > أو شغّل بـ `API_BASE=https://... npm start`.
+>
+> 📖 **مرجع الـ API الكامل** (كل البلوجنات + نماذج الاستجابة): [`docs/API.md`](docs/API.md)
 
 
 ```bash

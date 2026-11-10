@@ -57,3 +57,7 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   errors and lists duplicate command names.
 - A plugin may `export default` a single handler, an array of handlers, or a
   named `handler`; `lib/plugin-loader.js` normalizes all three.
+
+- **API contract**: every plugin that calls the external service and the exact
+  response shape it expects is documented in `docs/API.md`. Update it when you
+  add or change an API-backed plugin.
