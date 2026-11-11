@@ -3,5 +3,14 @@ session/
 jadi/
 memory.json
 *.log
-.env
 logs/
+.env
+.env.*
+creds.json
+*.creds.json
+pre-key-*.json
+app-state-sync-*.json
+app-state-sync-key-*.json
+sender-key-*.json
+sender-key-memory-*.json
+session-*.json

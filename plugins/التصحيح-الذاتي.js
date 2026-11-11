@@ -11,7 +11,6 @@ import { selfHeal } from '../lib/self-heal.js'
 import { matchesAny } from '../lib/identity.js'
 
 const REPORT_MARK = 'خطأ جديد في البوت'
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 function extractInput(m) {
   const msg = m?.message || {}
@@ -47,8 +46,7 @@ export async function all(m) {
     return
   }
 
-  await m.reply('🛠️ *جاري الإصلاح...* سأعيد التشغيل بعد لحظات ⏳')
-  await sleep(1200) // امنح رسالة التأكيد وقتاً لتُرسل قبل إعادة التشغيل
+  await m.reply('🛠️ *جاري الإصلاح...* تم إعادة تحميل البلوجن المتسبب ⏳')
   selfHeal.confirm(parsed.id)
 }
 

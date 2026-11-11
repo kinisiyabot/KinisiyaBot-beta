@@ -13,16 +13,16 @@ import {
 
 function make(overrides = {}) {
   const sent = []
-  const restarted = []
+  const healed = []
   let clock = 1_000_000
   const sh = createSelfHeal({
     now: () => clock,
     send: async (item) => sent.push(item),
-    onRestart: (item) => restarted.push(item),
+    onHeal: (item) => healed.push(item),
     log: () => {},
     ...overrides
   })
-  return { sh, sent, restarted, tick: (ms) => (clock += ms), at: () => clock }
+  return { sh, sent, healed, tick: (ms) => (clock += ms), at: () => clock }
 }
 
 test('isIgnored filters connection noise and tiny strings', () => {
@@ -56,52 +56,55 @@ test('guessPlugin pulls the plugin file out of a stack trace', () => {
 
 test('observe notifies once and dedupes the same error', () => {
   const { sh, sent } = make()
-  const item = sh.observe('TypeError: boom at plugins/x.js:1:1')
+  const item = sh.observe('TypeError: boom at plugins/x.js:1:1 session 12345678')
   assert.ok(item && item.id === 1)
   assert.equal(sent.length, 1)
-  // نفس الخطأ (بأرقام مختلفة) خلال نافذة التكرار -> لا إبلاغ ثانٍ
-  assert.equal(sh.observe('TypeError: boom at plugins/x.js:999:1'), null)
+  // نفس الخطأ (بمعرّف متغيّر) -> لا إبلاغ ثانٍ
+  assert.equal(sh.observe('TypeError: boom at plugins/x.js:1:1 session 87654321'), null)
   assert.equal(sent.length, 1)
 })
 
-test('cooldown blocks a second distinct error within the window', () => {
+test('distinct errors each notify exactly once (no per-minute throttle)', () => {
   const { sh, sent, tick } = make()
   sh.observe('Error: first distinct failure')
-  sh.observe('Error: second distinct failure') // خلال نفس اللحظة -> cooldown
-  assert.equal(sent.length, 1)
+  sh.observe('Error: second distinct failure') // خطأ مختلف -> إبلاغ فوري أيضاً
+  assert.equal(sent.length, 2)
   tick(60_001)
   sh.observe('Error: third distinct failure')
-  assert.equal(sent.length, 2)
+  assert.equal(sent.length, 3)
+  // نفس الخطأ مرة أخرى -> لا إبلاغ
+  sh.observe('Error: third distinct failure')
+  assert.equal(sent.length, 3)
 })
 
-test('confirm within the 5-minute window triggers a restart', () => {
-  const { sh, restarted, tick } = make()
+test('confirm within the 5-minute window triggers a heal, not a restart', () => {
+  const { sh, healed, tick } = make()
   const item = sh.observe('RangeError: index out of bounds')
   tick(4 * 60 * 1000) // قبل انتهاء 5 دقائق
   const res = sh.confirm(item.id)
   assert.ok(res.ok)
-  assert.equal(restarted.length, 1)
-  assert.equal(restarted[0].id, item.id)
+  assert.equal(healed.length, 1)
+  assert.equal(healed[0].id, item.id)
 })
 
 test('confirm after the 5-minute window is rejected (expired)', () => {
-  const { sh, restarted, tick } = make()
+  const { sh, healed, tick } = make()
   const item = sh.observe('RangeError: index out of bounds')
   assert.equal(item.expires - item.at, PENDING_TTL)
   tick(PENDING_TTL + 1)
   const res = sh.confirm(item.id)
   assert.equal(res.ok, false)
   assert.equal(res.reason, 'not-found')
-  assert.equal(restarted.length, 0)
+  assert.equal(healed.length, 0)
 })
 
-test('cancel marks the error handled and never restarts', () => {
-  const { sh, restarted } = make()
+test('cancel marks the error handled and never heals', () => {
+  const { sh, healed } = make()
   const item = sh.observe('SyntaxError: unexpected token')
   const res = sh.cancel(item.id)
   assert.ok(res.ok)
   assert.equal(sh.getPending(item.id), null)
-  assert.equal(restarted.length, 0)
+  assert.equal(healed.length, 0)
 })
 
 test('resolveOwnerReply parses buttons and explicit commands', () => {
@@ -116,11 +119,11 @@ test('resolveOwnerReply parses buttons and explicit commands', () => {
 })
 
 test('handleOwnerText confirms the latest pending error', () => {
-  const { sh, restarted } = make()
+  const { sh, healed } = make()
   sh.observe('Error: one')
   const res = sh.handleOwnerText('نعم')
   assert.ok(res.ok)
-  assert.equal(restarted.length, 1)
+  assert.equal(healed.length, 1)
 })
 
 test('formatReport includes the id, place and the 5-minute notice', () => {
