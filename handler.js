@@ -450,7 +450,7 @@ export async function handler(chatUpdate) {
     }
 
     try {
-      if (!opts["noprint"]) await await import("./lib/print.js")(m, this)
+      if (!opts["noprint"]) await (await import("./lib/print.js")).default(m, this)
     } catch (err) {
       console.warn(err)
     }

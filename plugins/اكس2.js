@@ -23,7 +23,7 @@ export async function before(m) {
                 return !0
         }
         if (debugMode)
-            m.reply('[DEBUG]\n' + require('util').format({
+            m.reply('[DEBUG]\n' + format({
                 isSurrender,
                 text: m.text
             }))
