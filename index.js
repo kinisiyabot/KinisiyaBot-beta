@@ -363,23 +363,35 @@ function unloadPlugin(filename) {
     return unloadPluginFile(global.plugins, filename);
 }
 
+// مهلة قصوى لتحميل بلوجن واحد. بلوجن واحد معلّق (import لا ينتهي) يجب
+// ألا يمنع تحميل بقية البلوجنات أبداً.
+const PLUGIN_LOAD_TIMEOUT = 20_000;
+
 async function filesInit() {
     const files = readdirSync(pluginFolder).filter(pluginFilter);
-    // حمّل البلوجنات بالتوازي (دفعات) لتسريع الإقلاع بدل التحميل التسلسلي.
-    const BATCH = 16;
-    for (let i = 0; i < files.length; i += BATCH) {
-        const batch = files.slice(i, i + BATCH);
-        await Promise.all(batch.map(async (filename) => {
-            try {
-                const file = global.__filename(join(pluginFolder, filename));
-                const module = await import(file);
-                Object.assign(global.plugins, resolvePluginExports(module, filename));
-            } catch (e) {
-                conn.logger.error(e);
-                unloadPlugin(filename);
-            }
-        }));
-    }
+    // حمّل كل البلوجنات بالتوازي، وكل بلوجن مستقل عن الآخر: فشل أو تعليق
+    // بلوجن واحد لا يُسقط ولا يوقف البقية (لا await تسلسلي بين الدفعات).
+    await Promise.all(files.map(async (filename) => {
+        let timer;
+        try {
+            const file = global.__filename(join(pluginFolder, filename));
+            const module = await Promise.race([
+                import(file),
+                new Promise((_, reject) => {
+                    timer = setTimeout(
+                        () => reject(new Error(`plugin load timed out after ${PLUGIN_LOAD_TIMEOUT}ms`)),
+                        PLUGIN_LOAD_TIMEOUT
+                    );
+                }),
+            ]);
+            Object.assign(global.plugins, resolvePluginExports(module, filename));
+        } catch (e) {
+            conn.logger.error(`plugin load failed '${filename}': ${e?.message || e}`);
+            unloadPlugin(filename);
+        } finally {
+            clearTimeout(timer);
+        }
+    }));
 }
 
 await filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
