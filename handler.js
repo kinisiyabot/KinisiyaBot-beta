@@ -1,5 +1,6 @@
 import { smsg } from "./lib/simple.js"
 import { matchesAny, learnIdentity, sameIdentity } from "./lib/identity.js"
+import { isDecryptError, noteDecryptFailure, extractNumber } from "./lib/decrypt-guard.js"
 import { format } from "util"
 import { fileURLToPath } from "url"
 import path, { join } from "path"
@@ -16,6 +17,36 @@ const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function (
 
 const pickRandom = list => list[Math.floor(Math.random() * list.length)]
 
+// نوع الرسالة التي تعذّر فك تشفيرها (proto.WebMessageInfo.StubType.CIPHERTEXT = 2).
+const CIPHERTEXT_STUB = 2
+
+// رسالة وصلت لكن تعذّر فك تشفيرها: CIPHERTEXT بلا محتوى، أو مع خطأ فك تشفير.
+function isUndecryptableStub(m) {
+  if (!m || !m.messageStubType) return false
+  if (Number(m.messageStubType) !== CIPHERTEXT_STUB) return false
+  if (!m.message) return true
+  const params = Array.isArray(m.messageStubParameters) ? m.messageStubParameters : []
+  return params.length === 0 || params.some((p) => isDecryptError(p))
+}
+
+// رقم الهاتف صاحب الرسالة (نفضّل معرّف رقم الهاتف على الـ LID لأن جلسات
+// Signal مفهرسة برقم الهاتف).
+function decryptNumber(m) {
+  const key = m?.key || {}
+  return extractNumber(key.senderPn || key.participantPn || m?.sender || key.participant || key.remoteJid)
+}
+
+// يتجاهل الرسالة فقط ويُبلّغ حرس فك التشفير. آمن تماماً ولا يرمي أبداً.
+function handleDecryptFailure(m) {
+  try {
+    const detail = [].concat(m?.messageStubParameters || []).filter(Boolean).join(' ')
+    console.log('🛡️ فشل فك التشفير، تخطي الرسالة', detail ? `(${detail})` : '')
+    noteDecryptFailure(`failed to decrypt message: ${detail}`, decryptNumber(m))
+  } catch (e) {
+    console.log('🛡️ decrypt-guard skip failed:', e?.message || e)
+  }
+}
+
 export async function handler(chatUpdate) {
   this.msgqueque = this.msgqueque || []
   this.uptime = this.uptime || Date.now()
@@ -31,6 +62,13 @@ export async function handler(chatUpdate) {
     m = smsg(this, m) || m
     if (!m) return
     m.exp = 0
+
+    // رسالة تعذّر فك تشفيرها (Bad MAC): تجاهلها فقط، لا تُسقط البوت.
+    // لا تعمل الأوامر ولا الردود على رسالة فارغة أصلاً.
+    if (isUndecryptableStub(m)) {
+      handleDecryptFailure(m)
+      return
+    }
 
     // تعلّم مرادفات الهوية (رقم الهاتف <-> الـ LID) من مفتاح الرسالة، حتى
     // تنجح مقارنات المطور/النخبة حتى لو أرسل المرسل بمعرّف واحد فقط.

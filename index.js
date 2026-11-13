@@ -33,6 +33,7 @@ import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import './lib/config.js';
 import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
 import { selfHeal, installConsoleMonitor, announceRestart } from './lib/self-heal.js';
+import { isDecryptError, noteDecryptFailure } from './lib/decrypt-guard.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
 const { proto } = await import('@whiskeysockets/baileys');
@@ -273,6 +274,12 @@ async function connectionUpdate(update) {
 }
 
 process.on('uncaughtException', (err) => {
+    // خطأ فك تشفير (Bad MAC) لا يُسقط البوت: تجاهله وسجّل الفشل فقط.
+    if (isDecryptError(err?.stack || err?.message || String(err))) {
+        console.log('🛡️ فشل فك التشفير (uncaught) — تجاهل ولا إسقاط للبوت');
+        noteDecryptFailure(err?.stack || err?.message || String(err));
+        return;
+    }
     selfHeal.capture(err, { type: 'uncaughtException' });
     console.error(err);
 });
@@ -324,6 +331,12 @@ global.reloadHandler = async function(restatConn) {
 };
 
 process.on('unhandledRejection', (reason, promise) => {
+    // فشل فك التشفير (Bad MAC) متوقّع ولا يُسقط البوت: تجاهله فقط.
+    if (isDecryptError(reason?.stack || reason?.message || String(reason))) {
+        console.log('🛡️ فشل فك التشفير (rejection) — تجاهل ولا إسقاط للبوت');
+        noteDecryptFailure(reason?.stack || reason?.message || String(reason));
+        return;
+    }
     console.error("⚠️ Unhandled rejection detected • Fazbear Alert 🍷", reason);
     selfHeal.capture(reason instanceof Error ? reason : new Error(String(reason)), { type: 'unhandledRejection' });
 });

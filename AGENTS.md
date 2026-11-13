@@ -66,3 +66,15 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   notifies owners with a 5-minute yes/no confirmation, and on "yes" reloads the
   offending plugin and restarts the process. Owner confirmation is handled by
   `plugins/التصحيح-الذاتي.js`. Disable with `--no-selfheal`.
+
+- **Bad MAC / failed decryption is non-fatal**: `lib/decrypt-guard.js` owns the
+  policy. A message that libsignal cannot decrypt arrives as a `CIPHERTEXT`
+  stub (`messageStubType == 2`) with no `message`; `handler.js` skips it early
+  (logs `🛡️ فشل فك التشفير، تخطي الرسالة`) so no plugin runs and the bot never
+  exits. `index.js`'s `uncaughtException` / `unhandledRejection` handlers route
+  decrypt errors to the same guard instead of self-heal. When the *same phone
+  number* fails MAC more than `DEFAULT_THRESHOLD` (5) times, the guard deletes
+  only that number's `session-<number>*.json` files from `global.sessions`
+  (`session/`) — never `creds.json`, never the whole session. Counters are
+  per-number and reset after a cleanup. Pure + injectable, tested in
+  `tests/decrypt-guard.test.js`.

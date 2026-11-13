@@ -59,3 +59,34 @@ for (const id of ['3EB0ABCDEF1234', 'BAE5ABCDEF1234', 'B24EABCDEF1234', 'TEST123
 test('a non-command message is ignored', async () => {
   assert.equal(await run('hello there', '3EB0ABCDEF1234'), 0)
 })
+
+// رسالة تعذّر فك تشفيرها (Bad MAC) تصل كـ CIPHERTEXT بلا محتوى: يجب تخطيها
+// فقط بلا رد وبلا رمي استثناء، مع الإبقاء على بقية البوت يعمل.
+global.sessions = 'tests/.no-such-session-dir'
+
+function makeStub(id, params = ['Bad MAC']) {
+  return proto.WebMessageInfo.fromObject({
+    key: { remoteJid: '212693863911@s.whatsapp.net', fromMe: false, id },
+    messageStubType: 2, // proto.WebMessageInfo.StubType.CIPHERTEXT
+    messageStubParameters: params,
+    pushName: 'Tester'
+  })
+}
+
+test('an undecryptable (CIPHERTEXT / Bad MAC) message is skipped without replying', async () => {
+  sent.length = 0
+  await assert.doesNotReject(
+    handler.call(conn, { messages: [makeStub('3EB0DEADBEEF')], type: 'notify' })
+  )
+  await new Promise((r) => setTimeout(r, 100))
+  assert.equal(sent.length, 0)
+})
+
+test('a CIPHERTEXT stub with no parameters is also skipped safely', async () => {
+  sent.length = 0
+  await assert.doesNotReject(
+    handler.call(conn, { messages: [makeStub('3EB0CAFEBABE', [])], type: 'notify' })
+  )
+  await new Promise((r) => setTimeout(r, 100))
+  assert.equal(sent.length, 0)
+})
