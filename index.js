@@ -31,7 +31,7 @@ import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import './lib/config.js';
 import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
 import { loadPlugin, DEFAULT_PLUGIN_TIMEOUT } from './lib/plugin-load.js';
-import { selfHeal, installConsoleMonitor, announceRestart } from './lib/self-heal.js';
+import { selfHeal, installConsoleMonitor, announceRestart, flushSelfHeal } from './lib/self-heal.js';
 import { isDecryptError, noteDecryptFailure } from './lib/decrypt-guard.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
@@ -261,6 +261,8 @@ async function connectionUpdate(update) {
         await joinChannels(conn);
         console.log(chalk.green.bold(`[ 🐍 ]: ${userName} is Connected`));
         announceRestart().catch(() => {});
+        // أرسل تقارير التصحيح الذاتي التي وصلت قبل تسجيل الدخول.
+        flushSelfHeal().catch(() => {});
     }
     let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
     if (connection === "close") {

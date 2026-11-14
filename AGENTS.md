@@ -66,6 +66,15 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   notifies owners with a 5-minute yes/no confirmation, and on "yes" reloads the
   offending plugin and restarts the process. Owner confirmation is handled by
   `plugins/التصحيح-الذاتي.js`. Disable with `--no-selfheal`.
+  Notifications are **deferred until login**: Baileys exposes `conn.user` as a
+  getter over `authState.creds.me`, which is `undefined` until pairing/login
+  completes, so any `sendMessage` before then throws
+  `Cannot read properties of undefined (reading 'id')` (inside `relayMessage`).
+  `sendToOwners()` checks `connectionReady(conn)` (`conn.user?.id`) and queues
+  pre-login reports; `index.js` calls `flushSelfHeal()` on `connection === 'open'`
+  to deliver them. The interactive-send override in `lib/simple.js` likewise
+  skips the interactiveMessage path (falls back to plain text) until
+  `conn.user.id` exists, so it never spams `console.error` during boot.
 
 - **Bad MAC / failed decryption is non-fatal**: `lib/decrypt-guard.js` owns the
   policy. A message that libsignal cannot decrypt arrives as a `CIPHERTEXT`

@@ -8,6 +8,7 @@ import {
   matchNo,
   guessPlugin,
   formatReport,
+  connectionReady,
   PENDING_TTL
 } from '../lib/self-heal.js'
 
@@ -132,4 +133,43 @@ test('formatReport includes the id, place and the 5-minute notice', () => {
   assert.ok(out.includes('#7'))
   assert.ok(out.includes('z.js'))
   assert.ok(out.includes('5 دقائق'))
+})
+
+test('connectionReady is false until Baileys exposes creds.me (conn.user.id)', () => {
+  assert.equal(connectionReady(null), false)
+  assert.equal(connectionReady(undefined), false)
+  assert.equal(connectionReady({}), false)
+  assert.equal(connectionReady({ user: null }), false)
+  // Baileys exposes user as a getter over authState.creds.me, undefined pre-login
+  assert.equal(connectionReady({ user: undefined }), false)
+  assert.equal(connectionReady({ user: {} }), false)
+  assert.equal(connectionReady({ user: { id: '2126@s.whatsapp.net' } }), true)
+})
+
+test('self-heal defers owner reports until the connection is ready (no pre-login crash)', async () => {
+  const { sendToOwners, flushSelfHeal } = await import('../lib/self-heal.js')
+  const sent = []
+
+  // pre-login: conn exists but creds.me is undefined -> must NOT attempt send
+  global.owner = [['212600000000']]
+  global.conn = {
+    user: undefined,
+    sendMessage: async (jid, content) => {
+      // mimic Baileys relayMessage reading creds.me.id
+      const me = global.conn.user
+      if (!me || !me.id) throw new TypeError("Cannot read properties of undefined (reading 'id')")
+      sent.push({ jid, content })
+    }
+  }
+
+  const item = { id: 1, at: Date.now(), text: 'Error: boot failure', meta: {} }
+  await sendToOwners(item)
+  assert.equal(sent.length, 0, 'no send attempted before login')
+
+  // after login: flush delivers the queued report
+  global.conn.user = { id: '212600000000@s.whatsapp.net' }
+  const n = await flushSelfHeal()
+  assert.equal(n, 1, 'queued report flushed after login')
+  assert.equal(sent.length, 1)
+  assert.equal(sent[0].jid, '212600000000@s.whatsapp.net')
 })
