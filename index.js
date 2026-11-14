@@ -3,7 +3,6 @@
 
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 import './config.js';
-import './plugins/_allfake.js';
 import cfonts from 'cfonts';
 import { createRequire } from 'module';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -22,7 +21,6 @@ import fs, {
 import yargs from 'yargs';
 import { spawn, execSync } from 'child_process';
 import lodash from 'lodash';
-import { freddyJadiBot } from './plugins/sockets-serbot.js';
 import chalk from 'chalk';
 import syntaxerror from 'syntax-error';
 import pino from 'pino';
@@ -32,6 +30,7 @@ import { Boom } from '@hapi/boom';
 import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import './lib/config.js';
 import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
+import { loadPlugin, DEFAULT_PLUGIN_TIMEOUT } from './lib/plugin-load.js';
 import { selfHeal, installConsoleMonitor, announceRestart } from './lib/self-heal.js';
 import { isDecryptError, noteDecryptFailure } from './lib/decrypt-guard.js';
 import { Low, JSONFile } from 'lowdb';
@@ -342,6 +341,15 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Sistema de sub-bots (JadiBot)
+// sockets-serbot.js كان يُستورد في أعلى الملف استيراداً ثابتاً، فيُنفَّذ كامل
+// جسمه (exec + fetchLatestBaileysVersion + useMultiFileAuthState) قبل حماية
+// المهلة. الآن نحمّله بنفس حماية المهلة كأي بلوجن آخر: إن تعليق أو فشل يُتخطى
+// ولا يُسقط البوت. لا نضع أي نداء شبكة في أعلى الملف (مصدر انتهاء المهلة).
+let freddyJadiBot = null;
+if (global.freddyJadibts) {
+    const serbot = await loadPlugin(join(__dirname, 'plugins/sockets-serbot.js'), { name: 'sockets-serbot.js' });
+    if (serbot.ok) freddyJadiBot = serbot.module.freddyJadiBot || serbot.module.default || null;
+}
 global.rutaJadiBot = join(__dirname, `./${global.jadi}`);
 if (global.freddyJadibts) {
     if (!existsSync(global.rutaJadiBot)) {
@@ -358,7 +366,13 @@ if (global.freddyJadibts) {
             if (existsSync(botPath) && statSync(botPath).isDirectory()) {
                 const readBotPath = readdirSync(botPath);
                 if (readBotPath.includes(creds)) {
-                    freddyJadiBot({ pathfreddyJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' });
+                    if (typeof freddyJadiBot !== 'function') {
+                        console.error(`⚠️ تخطّي البوت الفرعي '${gjbts}': بلوجن sockets-serbot.js لم يُحمّل`);
+                        continue;
+                    }
+                    Promise.resolve()
+                        .then(() => freddyJadiBot({ pathfreddyJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' }))
+                        .catch((e) => console.error(`⚠️ فشل تشغيل البوت الفرعي '${gjbts}':`, e?.message || e));
                 }
             }
         }
@@ -366,7 +380,12 @@ if (global.freddyJadibts) {
 }
 
 // Sistema de plugins con recarga en caliente
-const pluginFolder = global.__dirname(join(__dirname, './plugins'));
+// نظام البلوجنات مع إعادة تحميل حيّة.
+// ملاحظة: لا نُغلّف المسار بـ global.__dirname() لأنها تنزع آخر مقطع من
+// المسار (path.dirname)، فتحوّل ./plugins إلى جذر المشروع. جذر المشروع يضمّ
+// index.js، فكان البوت يستورد نفسه كبلوجن ⇒ استيراد دائري ⇒ تعليق ⇒
+// "plugin load timed out in index.js". هنا نأخذ مجلد plugins مباشرة.
+const pluginFolder = join(__dirname, './plugins');
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 
@@ -378,32 +397,24 @@ function unloadPlugin(filename) {
 
 // مهلة قصوى لتحميل بلوجن واحد. بلوجن واحد معلّق (import لا ينتهي) يجب
 // ألا يمنع تحميل بقية البلوجنات أبداً.
-const PLUGIN_LOAD_TIMEOUT = 20_000;
+const PLUGIN_LOAD_TIMEOUT = DEFAULT_PLUGIN_TIMEOUT;
 
 async function filesInit() {
     const files = readdirSync(pluginFolder).filter(pluginFilter);
     // حمّل كل البلوجنات بالتوازي، وكل بلوجن مستقل عن الآخر: فشل أو تعليق
     // بلوجن واحد لا يُسقط ولا يوقف البقية (لا await تسلسلي بين الدفعات).
+    // loadPlugin لا يرمي أبداً: يُرجع { ok, module } أو { ok:false, error }،
+    // ويطبع اسم البلوجن الفاشل في console.error (يلتقطه نظام التصحيح الذاتي).
     await Promise.all(files.map(async (filename) => {
-        let timer;
-        try {
-            const file = global.__filename(join(pluginFolder, filename));
-            const module = await Promise.race([
-                import(file),
-                new Promise((_, reject) => {
-                    timer = setTimeout(
-                        () => reject(new Error(`plugin load timed out after ${PLUGIN_LOAD_TIMEOUT}ms`)),
-                        PLUGIN_LOAD_TIMEOUT
-                    );
-                }),
-            ]);
-            Object.assign(global.plugins, resolvePluginExports(module, filename));
-        } catch (e) {
-            conn.logger.error(`plugin load failed '${filename}': ${e?.message || e}`);
+        const { ok, module } = await loadPlugin(join(pluginFolder, filename), {
+            name: filename,
+            timeoutMs: PLUGIN_LOAD_TIMEOUT,
+        });
+        if (!ok) {
             unloadPlugin(filename);
-        } finally {
-            clearTimeout(timer);
+            return;
         }
+        Object.assign(global.plugins, resolvePluginExports(module, filename));
     }));
 }
 

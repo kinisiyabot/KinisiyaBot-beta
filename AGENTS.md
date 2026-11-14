@@ -78,3 +78,26 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   (`session/`) — never `creds.json`, never the whole session. Counters are
   per-number and reset after a cleanup. Pure + injectable, tested in
   `tests/decrypt-guard.test.js`.
+
+- **Plugin loading is guarded and named**: `lib/plugin-load.js` loads one
+  plugin with a timeout and never throws — it returns `{ ok, module }` or
+  `{ ok: false, error }`, and on failure logs the plugin's *file name* via
+  `console.error` (which `lib/self-heal.js` picks up). `filesInit()` in
+  `index.js` runs all plugins in parallel through it, so one hanging/failing
+  plugin is skipped and never blocks boot or the other plugins. Tests:
+  `tests/plugin-load.test.js`.
+
+- **`pluginFolder` must NOT be wrapped in `global.__dirname()`**:
+  `global.__dirname()` calls `path.dirname()`, which strips the last path
+  segment. `global.__dirname(join(__dirname, './plugins'))` therefore resolves
+  to the **project root**, not `plugins/`. The root contains `index.js`, so the
+  loader imported the bot's own entry point as a plugin → circular self-import →
+  hang → `plugin load timed out in index.js`. Use `join(__dirname, './plugins')`
+  directly. (The original source used `./plugins/index`, which is why the old
+  wrapper happened to work.)
+
+- **No network calls at the top of `index.js`**: static `import` of a plugin
+  file executes its whole module body *before* the plugin guard. `plugins/_allfake.js`
+  and `plugins/sockets-serbot.js` (the latter runs `exec` + `fetchLatestBaileysVersion`
+  + `useMultiFileAuthState` at import time) are now loaded through
+  `loadPlugin()` instead of a top-level `import`, so they can't stall boot.
