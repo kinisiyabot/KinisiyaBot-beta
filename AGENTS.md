@@ -127,3 +127,11 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   guard with `existsSync`) instead of `throw`ing in the module scope. Required
   data files (`zraf.json` is committed) are the exception.
 
+
+- **Never force-exit or self-wipe**: `lib/API.js` (dead code today — nothing
+  imports it) used to run `fs.rmSync(process.cwd(), { recursive: true })` then
+  `process.exit(1)` from a panel-triggered "death" path, which would erase the
+  source and every session with no way back. The death path now only notifies
+  the owner and logs; no file deletion, no `process.exit`. `tests/no-exit.test.js`
+  fails if `process.exit(` or `rmSync(process.cwd())` reappears in `lib/*.js`
+  or the entry files.
