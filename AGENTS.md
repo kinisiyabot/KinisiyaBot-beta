@@ -110,3 +110,20 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   and `plugins/sockets-serbot.js` (the latter runs `exec` + `fetchLatestBaileysVersion`
   + `useMultiFileAuthState` at import time) are now loaded through
   `loadPlugin()` instead of a top-level `import`, so they can't stall boot.
+
+- **One `sharp` for the whole tree (npm `overrides`)**: `wa-sticker-formatter`
+  depends on `sharp@^0.30`, whose prebuilt `sharp-linux-x64` binary is missing on
+  a fresh install, so `plugins/ستيك.js` failed to load with
+  `Cannot find module '../build/Release/sharp-linux-x64.node'`. The root
+  `dependencies` already pin `sharp@^0.34.5`, which ships working binaries and
+  is API-compatible with `wa-sticker-formatter`'s usage (`toFormat('webp')`,
+  `resize`, `fit.cover/contain`, `composite`, `.webp()`). `package.json`'s
+  `overrides: { "sharp": "^0.34.5" }` collapses the nested copy into the root
+  one, so there is a single working `sharp`. Run `npm install` after editing it.
+
+- **Plugin module bodies must not `throw` at import time for missing optional
+  data**: `loadPlugin()` treats a top-level throw as a load failure and skips
+  the whole file forever. Read optional JSON/media lazily inside the handler (or
+  guard with `existsSync`) instead of `throw`ing in the module scope. Required
+  data files (`zraf.json` is committed) are the exception.
+
