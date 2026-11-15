@@ -135,3 +135,11 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   the owner and logs; no file deletion, no `process.exit`. `tests/no-exit.test.js`
   fails if `process.exit(` or `rmSync(process.cwd())` reappears in `lib/*.js`
   or the entry files.
+
+- **`npm run audit:menu`** guards the menu buttons: it fills `global.plugins`
+  exactly like `index.js` does, then calls the real `availableCategories()`
+  from `plugins/menu.js` and fails if any *shown* section has no plugin
+  registering `.قسم_<id>`. `availableCategories()` already hides sections with
+  no command (currently `news`, `owner`, `quran`, `sticker`, `database` are
+  defined but hidden), so a dead button only appears if a category id is added
+  without a matching `.قسم_<id>` plugin — or if that plugin stops registering.
