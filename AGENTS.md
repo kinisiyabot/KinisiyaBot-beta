@@ -92,11 +92,34 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   (logs `🛡️ فشل فك التشفير، تخطي الرسالة`) so no plugin runs and the bot never
   exits. `index.js`'s `uncaughtException` / `unhandledRejection` handlers route
   decrypt errors to the same guard instead of self-heal. When the *same phone
-  number* fails MAC more than `DEFAULT_THRESHOLD` (5) times, the guard deletes
-  only that number's `session-<number>*.json` files from `global.sessions`
-  (`session/`) — never `creds.json`, never the whole session. Counters are
-  per-number and reset after a cleanup. Pure + injectable, tested in
-  `tests/decrypt-guard.test.js`.
+  number* fails MAC more than `DEFAULT_THRESHOLD` (5) times, the guard
+  **invalidates that number's Signal session** — never `creds.json`, never the
+  whole session. Counters are per-number and reset after a cleanup. Pure +
+  injectable, tested in `tests/decrypt-guard.test.js`.
+
+- **Deleting the session file is NOT enough — you must invalidate the live key
+  store.** Baileys wraps the auth key store in `makeCacheableSignalKeyStore`,
+  which keeps every session in an in-memory `NodeCache` (TTL = 5 min). Deleting
+  `session-<number>.json` from disk leaves the corrupt session alive in that
+  cache, so Baileys keeps re-decrypting with it and re-emitting `Bad MAC` in an
+  endless loop (the bot never sends). The fix is
+  `authState.keys.set({ session: { '<number>.<device>': null } })`, which clears
+  the cache **and** the file. `createDecryptGuard` therefore reads the live store
+  via `getDecryptGuard().setStore(() => global.conn?.authState?.keys)` (wired in
+  `index.js` right after `makeWASocket`) and calls `invalidateStore(addresses)`.
+  The address key is `'<number>.<device>'` (from the `session-<addr>.json` file
+  name), not a JID. Regression test with real Baileys (no mocks):
+  `tests/decrypt-guard-store.test.js` — it fails if the guard ever goes back to
+  deleting only the file.
+
+- **Never pass `interactiveButtons`/`title`/`subtitle`/`product` to Baileys
+  as-is.** Baileys' `generateWAMessageContent` ignores unknown keys and throws
+  `Invalid media type` for `caption`/`title` with no media, so a failed
+  interactive send followed by a raw retry produces *nothing* (silent no-send).
+  `lib/simple.js`'s `sendMessage` routes through `deliverMessage`, which always
+  falls back to `buildPlainFallback(content)` (from `lib/interactive.js`) — a
+  plain `{ text }` that keeps text/title/subtitle/footer. Tested with real
+  Baileys in `tests/interactive-send-fallback.test.js`.
 
 - **Plugin loading is guarded and named**: `lib/plugin-load.js` loads one
   plugin with a timeout and never throws — it returns `{ ok, module }` or

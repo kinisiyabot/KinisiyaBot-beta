@@ -32,7 +32,7 @@ import './lib/config.js';
 import { resolvePluginExports, unloadPlugin as unloadPluginFile } from './lib/plugin-loader.js';
 import { loadPlugin, DEFAULT_PLUGIN_TIMEOUT } from './lib/plugin-load.js';
 import { selfHeal, installConsoleMonitor, announceRestart, flushSelfHeal } from './lib/self-heal.js';
-import { isDecryptError, noteDecryptFailure } from './lib/decrypt-guard.js';
+import { isDecryptError, noteDecryptFailure, getDecryptGuard } from './lib/decrypt-guard.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './lib/store.js';
 const { proto } = await import('@whiskeysockets/baileys');
@@ -188,6 +188,11 @@ const connectionOptions = {
 };
 
 global.conn = makeWASocket(connectionOptions);
+// اربط حرس فك التشفير بمخزن المفاتيح الحيّ. مهم جداً: بدون ذلك يقتصر الحرس
+// على حذف ملف الجلسة من القرص، بينما Baileys يقرأ الجلسة التالفة من كاش
+// الذاكرة (NodeCache، TTL 5 دقائق) فيعيد Bad MAC إلى ما لا نهاية ولا يرسل.
+// نمرّر دالة (لا كائناً) لأن reloadHandler يستبدل global.conn بسوكِت جديد.
+getDecryptGuard().setStore(() => global.conn?.authState?.keys || null);
 // سجّل مستمع اتصال مباشرةً بعد إنشاء الجلسة، لأن حدث QR/الاتصال يصل
 // بسرعة (أقل من ثانية) بينما تحميل البلوجنات يستغرق وقتاً طويلاً.
 conn.connectionUpdate = connectionUpdate;

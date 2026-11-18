@@ -6,6 +6,7 @@ import {
   normalizeInteractiveMessage,
   readInteractiveReply,
   buildInteractiveContent,
+  buildPlainFallback,
 } from '../lib/interactive.js'
 
 const im = {
@@ -100,3 +101,41 @@ test('buildInteractiveContent produces the shape menu.js uses', () => {
   assert.equal(c.nativeFlowMessage.buttons.length, 1)
   assert.equal(c.nativeFlowMessage.messageParamsJson, '')
 })
+
+// سبب هذه الاختبارات: تمرير `interactiveButtons`/`title`/`subtitle`/`product`
+// كما هي إلى Baileys يُنتج محتوى فارغاً أو يرمي "Invalid media type"، فلا يُرسَل
+// شيء إطلاقاً (صمت تام). الخطة البديلة تضمن أن يصل نصّ صالح دائماً.
+
+test('buildPlainFallback never emits button keys Baileys would reject', () => {
+  const fb = buildPlainFallback({
+    text: 'نصّ',
+    title: 'عنوان',
+    subtitle: 'وصف',
+    footer: 'فوتر',
+    interactiveButtons: [{ name: 'quick_reply' }],
+    product: { productImage: { url: 'https://x/y.png' } },
+  })
+  assert.equal(typeof fb.text, 'string')
+  assert.equal(fb.interactiveButtons, undefined)
+  assert.equal(fb.title, undefined)
+  assert.equal(fb.product, undefined)
+  // العنوان والوصف والفوتر لا تُفقد، بل تُدمج في النصّ
+  assert.ok(fb.text.includes('نصّ'))
+  assert.ok(fb.text.includes('عنوان'))
+  assert.ok(fb.text.includes('وصف'))
+  assert.ok(fb.text.includes('فوتر'))
+})
+
+test('buildPlainFallback uses caption when there is no text and keeps mentions', () => {
+  const fb = buildPlainFallback({ caption: 'تعليق', mentions: ['1@s.whatsapp.net'] })
+  assert.ok(fb.text.includes('تعليق'))
+  assert.deepEqual(fb.mentions, ['1@s.whatsapp.net'])
+})
+
+test('buildPlainFallback always yields a non-empty text (bot never goes silent)', () => {
+  const fb = buildPlainFallback({ interactiveButtons: [{ name: 'quick_reply' }] })
+  assert.ok(fb.text.length > 0)
+  const empty = buildPlainFallback({})
+  assert.ok(empty.text.length > 0)
+})
+
