@@ -1,4 +1,5 @@
 import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
+import { readInteractiveReply } from '../lib/interactive.js';
 
 const handler = async (message, { conn, text, usedPrefix }) => { 
     const deviceType = await getDevice(message.key.id);
@@ -43,16 +44,14 @@ const handler = async (message, { conn, text, usedPrefix }) => {
 };
 
 handler.before = async (m, { conn }) => {
-    if (m.type === 'interactive_response') {
-        let buttonId = '';
-        try {
-            const response = JSON.parse(m.response);
-            buttonId = response.id || response.buttonId;
-        } catch {
-            buttonId = m.response?.id || '';
-        }
-        
-        if (buttonId && buttonId.startsWith('rate_')) {
+    // زر التقييم يصل كردّ تفاعلي داخل m.message (قد يكون ملفوفاً بـ
+    // viewOnceMessage). لا وجود لحقول m.type/m.response إطلاقاً، فكانت
+    // هذه المعالجة لا تعمل أبداً ولا يُرسل أي رد عند الضغط على النجمة.
+    const reply = readInteractiveReply(m.message);
+    if (!reply) return false;
+
+    const buttonId = reply.id;
+    if (buttonId && buttonId.startsWith('rate_')) {
             const stars = parseInt(buttonId.split('_')[1]);
             const developerContact = '212693863911@s.whatsapp.net';
             
@@ -88,7 +87,6 @@ handler.before = async (m, { conn }) => {
 
             await m.reply(feedbackMessage + `\n\n*رابط التواصل مع المطور:* wa.me/${developerContact.split('@')[0]}`);
             return true;
-        }
     }
     return false;
 };

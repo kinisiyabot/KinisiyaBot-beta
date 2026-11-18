@@ -2,42 +2,19 @@
  * @type {import('@whiskeysockets/baileys')}
  */
 const {proto, generateWAMessage, areJidsSameUser} = await import('@whiskeysockets/baileys')
+import { readInteractiveReply } from '../lib/interactive.js'
 
 export async function all(m, chatUpdate) {
 if (m.isBaileys || !m.message) return
 
-const interactiveMsg =
-m.message.buttonsResponseMessage || m.message.templateButtonReplyMessage || m.message.listResponseMessage || m.message.interactiveResponseMessage
-
-if (!interactiveMsg) return
+// ردّ الأزرار قد يصل ملفوفاً بـ viewOnceMessage/ephemeralMessage، لذا نقرأه
+// عبر readInteractiveReply الذي يفكّ الأغلفة أولاً. بدون ذلك لا يُتعرّف على
+// ضغط الزر فلا يتحوّل إلى أمر نصي ولا يُرسل أي رد.
+const reply = readInteractiveReply(m.message)
+if (!reply) return
+const id = reply.id
 
 const opts = global.opts || {}
-
-let id = null
-
-try {
-if (m.message.buttonsResponseMessage) {
-id = m.message.buttonsResponseMessage.selectedButtonId
-} else if (m.message.templateButtonReplyMessage) {
-id = m.message.templateButtonReplyMessage.selectedId
-} else if (m.message.listResponseMessage) {
-id = m.message.listResponseMessage.singleSelectReply?.selectedRowId
-} else if (m.message.interactiveResponseMessage) {
-const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson || '{}'
-const params = JSON.parse(paramsJson)
-id = params.id || params.cmd || params.command || null
-}
-} catch (e) {
-return
-}
-
-if (!id) return
-
-const text =
-m.message.buttonsResponseMessage?.selectedDisplayText ||
-m.message.templateButtonReplyMessage?.selectedDisplayText ||
-m.message.listResponseMessage?.title ||
-''
 
 let isIdMessage = false
 let usedPrefix = null
