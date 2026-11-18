@@ -105,6 +105,13 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   `index.js` runs all plugins in parallel through it, so one hanging/failing
   plugin is skipped and never blocks boot or the other plugins. Tests:
   `tests/plugin-load.test.js`.
+- **Never call `timer.unref()` on the plugin-load timeout timer.** `unref()`
+  lets Node exit while the timer is still pending; when a plugin hangs there is
+  no other scheduled work, so the event loop looks empty and the process exits
+  *before* the timeout fires (`Detected unsettled top-level await`) — the bot
+  dies instead of skipping the plugin. This only shows on Node 22 (the CI
+  version), where `node --test` reports the timeout tests as `cancelledByParent`.
+  `tests/plugin-load-timer.test.js` fails if `timer.unref()` reappears.
 
 - **`pluginFolder` must NOT be wrapped in `global.__dirname()`**:
   `global.__dirname()` calls `path.dirname()`, which strips the last path
