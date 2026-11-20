@@ -40,16 +40,24 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   text command and re-emits `messages.upsert`. Menu buttons only work if their
   target command id is registered by some plugin, so keep ids in sync with
   `handler.command` values (e.g. `.قسم_<id>`, `.menu_<lang>`).
-- **Interactive messages must be sent at the top level, never wrapped in
-  `viewOnceMessage`.** 39 plugins used to wrap `interactiveMessage` in
-  `viewOnceMessage`, which makes WhatsApp render it as a view-once message: the
-  buttons are not shown as buttons, and the tap comes back wrapped so
-  `_templateResponse` cannot read it — so no reply is ever sent. `lib/simple.js`
-  now normalizes this in its `relayMessage` override via
-  `lib/interactive.js` (`normalizeInteractiveMessage`), so a plugin may keep the
-  old shape and still work. New code should send top-level (like `plugins/menu.js`).
-  Read incoming taps with `readInteractiveReply(m.message)` (handles the plain
-  and the viewOnce-wrapped shapes) instead of hand-parsing `m.message.*`.
+- **Interactive messages need `messageContextInfo` — that is what makes buttons
+  appear.** WhatsApp only renders the `nativeFlowMessage` buttons of an
+  `interactiveMessage` when `messageContextInfo.deviceListMetadata` is present
+  with `deviceListMetadataVersion: 2`. Without it the message arrives as a card
+  with no buttons (or not at all). The plugins (40 files) never set it, so every
+  button silently did nothing. `lib/simple.js`'s `relayMessage` override calls
+  `ensureMessageContextInfo()` from `lib/interactive.js`, which adds the field at
+  the level that actually holds `interactiveMessage` (top level or innermost
+  wrapper) and leaves every other message type untouched. Locked in by
+  `tests/buttons-wire-format.test.js`, which round-trips real protobuf.
+
+  **The `viewOnceMessage` wrapper is fine — do not strip it.** It was the
+  original working shape (the old bot used it and its buttons worked); the real
+  missing piece was always `messageContextInfo`. An earlier "fix" removed the
+  wrapper instead, which did not help. A plugin may send either shape; the
+  `relayMessage` override normalizes the context for both. Read incoming taps
+  with `readInteractiveReply(m.message)` (handles plain and wrapped) instead of
+  hand-parsing `m.message.*`.
 - External HTTP APIs: the base URL is centralized in `lib/config.js`
   (`global.API_BASE`) and can be overridden with the `API_BASE` env var. Do not
   hardcode host URLs in plugins — reference `global.API_BASE`.

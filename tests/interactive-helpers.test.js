@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import {
   unwrapMessage,
   findInteractiveMessage,
-  normalizeInteractiveMessage,
+  ensureMessageContextInfo,
   readInteractiveReply,
   buildInteractiveContent,
   buildPlainFallback,
@@ -24,27 +24,33 @@ test('findInteractiveMessage finds top-level and wrapped interactiveMessage', ()
   assert.equal(findInteractiveMessage({ conversation: 'hi' }), null)
 })
 
-test('normalizeInteractiveMessage lifts wrapped interactiveMessage to top level', () => {
-  const out = normalizeInteractiveMessage({ viewOnceMessage: { message: { interactiveMessage: im } } })
+test('ensureMessageContextInfo adds the context a wrapped interactive message needs', () => {
+  const out = ensureMessageContextInfo({ viewOnceMessage: { message: { interactiveMessage: im } } })
+  // الغلاف يبقى كما هو (البوت القديم كان يعمل به) — نضيف الحقل الناقص فقط
+  assert.ok(out.viewOnceMessage, 'the viewOnce wrapper must be preserved')
+  const ctx = out.viewOnceMessage.message.messageContextInfo
+  assert.equal(ctx.deviceListMetadataVersion, 2)
+  assert.deepEqual(ctx.deviceListMetadata, {})
+  assert.deepEqual(out.viewOnceMessage.message.interactiveMessage, im)
+})
+
+test('ensureMessageContextInfo adds the context to a top-level interactive message', () => {
+  const out = ensureMessageContextInfo({ interactiveMessage: im })
+  assert.equal(out.messageContextInfo.deviceListMetadataVersion, 2)
   assert.deepEqual(out.interactiveMessage, im)
-  assert.equal(out.viewOnceMessage, undefined)
 })
 
-test('normalizeInteractiveMessage unwraps nested wrappers', () => {
-  const out = normalizeInteractiveMessage({
-    ephemeralMessage: { message: { viewOnceMessage: { message: { interactiveMessage: im } } } },
-  })
-  assert.ok(out.interactiveMessage)
-  assert.equal(out.ephemeralMessage, undefined)
-  assert.equal(out.viewOnceMessage, undefined)
-})
-
-test('normalizeInteractiveMessage leaves non-interactive messages untouched', () => {
+test('ensureMessageContextInfo does not touch non-interactive messages', () => {
   const photo = { viewOnceMessage: { message: { imageMessage: { url: 'x' } } } }
-  assert.equal(normalizeInteractiveMessage(photo), photo, 'a real view-once photo must not be rewritten')
+  assert.equal(ensureMessageContextInfo(photo), photo, 'a real view-once photo must not be rewritten')
   const plain = { conversation: 'hi' }
-  assert.equal(normalizeInteractiveMessage(plain), plain)
-  assert.equal(normalizeInteractiveMessage(null), null)
+  assert.equal(ensureMessageContextInfo(plain), plain)
+  assert.equal(ensureMessageContextInfo(null), null)
+})
+
+test('ensureMessageContextInfo keeps an existing messageContextInfo', () => {
+  const existing = { messageContextInfo: { deviceListMetadataVersion: 2, deviceListMetadata: { a: 1 } }, interactiveMessage: im }
+  assert.equal(ensureMessageContextInfo(existing), existing, 'already-complete messages are returned unchanged')
 })
 
 test('unwrapMessage strips nested wrappers only', () => {
