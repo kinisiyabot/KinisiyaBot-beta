@@ -27,19 +27,27 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 🌍 *رابط:* ${link}`;
 
     const messageContent = {
-      buttonsMessage: {
-        contentText: teksnya,
-        footerText: '⏤͟͞ू⃪ 𝐊𝐈𝐍𝐈𝐒𝐈𝐘𝐀 𝐁𝐎𝐓⃝',
-        buttons: [
-          {
-            buttonId: `.ابل-تحميل ${link}`,
-            buttonText: { displayText: '🩸 تحميل الأغنية' },
-            type: 1
-          }
-        ],
-        headerType: 4,
-        imageMessage: imageMessage
-      }
+      interactiveMessage: {
+        header: {
+          hasMediaAttachment: true,
+          imageMessage: imageMessage,
+          videoMessage: null,
+        },
+        body: { text: teksnya },
+        footer: { text: '⏤͟͞ू⃪ 𝐊𝐈𝐍𝐈𝐒𝐈𝐘𝐀 𝐁𝐎𝐓⃝' },
+        nativeFlowMessage: {
+          buttons: [
+            {
+              name: 'quick_reply',
+              buttonParamsJson: JSON.stringify({
+                display_text: '🩸 تحميل الأغنية',
+                id: `.ابل-تحميل ${link}`,
+              }),
+            },
+          ],
+          messageParamsJson: '',
+        },
+      },
     };
 
     const msg = generateWAMessageFromContent(

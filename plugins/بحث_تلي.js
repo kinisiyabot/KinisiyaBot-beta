@@ -40,18 +40,20 @@ let handler = async (m, { conn, text }) => {
 
         if(!results.length) return conn.reply(m.chat, '❌ لم أتمكن من إيجاد نتائج لبحثك.');
 
-        const listMessage = {
+        await conn.sendMessage(m.chat, {
             text: `📌 نتائج البحث عن: ${text}`,
             footer: 'اختر أي قناة لمعرفة معلوماتها',
-            title: 'بحث تيليجرام',
-            buttonText: 'عرض النتائج',
-            sections: [{
-                title: 'قنوات ومجموعات',
-                rows: results
+            interactiveButtons: [{
+                name: 'single_select',
+                buttonParamsJson: JSON.stringify({
+                    title: 'عرض النتائج',
+                    sections: [{
+                        title: 'قنوات ومجموعات',
+                        rows: results
+                    }]
+                })
             }]
-        };
-
-        await conn.sendMessage(m.chat, listMessage);
+        });
 
     } catch (err) {
         console.log(err);
