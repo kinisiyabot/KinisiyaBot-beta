@@ -62,7 +62,7 @@ test('readInteractiveReply reads a plain native-flow response', () => {
   const r = readInteractiveReply({
     interactiveResponseMessage: { nativeFlowResponseMessage: { paramsJson: JSON.stringify({ id: '.answer_مصر' }) } },
   })
-  assert.deepEqual(r, { id: '.answer_مصر', text: '' })
+  assert.deepEqual(r, { id: '.answer_مصر', text: '', source: 'interactive' })
 })
 
 test('readInteractiveReply reads a viewOnce-wrapped native-flow response', () => {
@@ -74,7 +74,7 @@ test('readInteractiveReply reads a viewOnce-wrapped native-flow response', () =>
       },
     },
   })
-  assert.deepEqual(r, { id: '.answer_مصر', text: '' })
+  assert.deepEqual(r, { id: '.answer_مصر', text: '', source: 'interactive' })
 })
 
 test('readInteractiveReply reads buttons/list/template responses (plain + wrapped)', () => {

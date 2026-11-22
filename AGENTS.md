@@ -37,9 +37,23 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   `filesInit()` plugin scan, otherwise the first QR event is missed.
 - Runtime data (`session/`, `jadi/`, `memory.json`) is gitignored.
 - Buttons: `plugins/_templateResponse.js` converts a button/list tap back into a
-  text command and re-emits `messages.upsert`. Menu buttons only work if their
-  target command id is registered by some plugin, so keep ids in sync with
-  `handler.command` values (e.g. `.قسم_<id>`, `.menu_<lang>`).
+  text command and re-emits `messages.upsert`. It delegates the matching to
+  `lib/button-router.js` (`routeButtonReply`), which handles all four reply
+  shapes (`interactiveResponseMessage`, `listResponseMessage`,
+  `templateButtonReplyMessage`, `buttonsResponseMessage`), accepts ids with or
+  without a prefix, and replies with a clear message when no command matches
+  instead of staying silent. Menu buttons only work if their target command id
+  is registered by some plugin, so keep ids in sync with `handler.command`
+  values (e.g. `.قسم_<id>`, `.menu_<lang>`).
+- **WhatsApp accepts at most 3 buttons per message.** Sending more does not
+  error — the extra buttons are simply dropped, which looks exactly like "the
+  bot says it sent it but nothing arrives". `normalizeButtons()` in
+  `lib/interactive.js` keeps the first 3 and folds the remaining `quick_reply`
+  buttons into a `single_select` list so no option is lost; it runs inside
+  `prepareInteractiveMessage()`, applied by the `relayMessage` override, so
+  every send path is covered. Write 3 or fewer buttons anyway.
+  `npm run audit:buttons` fails on any button id with no registered command and
+  lists plugins that still exceed 3.
 - **Interactive messages need `messageContextInfo` — that is what makes buttons
   appear.** WhatsApp only renders the `nativeFlowMessage` buttons of an
   `interactiveMessage` when `messageContextInfo.deviceListMetadata` is present

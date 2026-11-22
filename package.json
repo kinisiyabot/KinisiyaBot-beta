@@ -17,7 +17,8 @@
     "test": "node --test --test-force-exit \"tests/*.test.js\"",
     "test2": "nodemon index.js",
     "audit:plugins": "node scripts/audit-plugins.mjs",
-    "audit:menu": "node scripts/audit-menu.mjs"
+    "audit:menu": "node scripts/audit-menu.mjs",
+    "audit:buttons": "node scripts/audit-buttons.mjs"
   },
   "author": "kinisiya bot (https://t.me/yertchi_kunusua)",
   "homepage": "https://github.com/kinisiyabot/KinisiyaBot-beta",
