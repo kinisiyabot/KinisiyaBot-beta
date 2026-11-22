@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { proto } from '@whiskeysockets/baileys'
 import { routeButtonReply, findPluginForCommand } from '../lib/button-router.js'
-import { normalizeButtons, MAX_BUTTONS, readInteractiveReply } from '../lib/interactive.js'
+import { normalizeMessageButtons, MAX_BUTTONS, readInteractiveReply } from '../lib/interactive.js'
 
 const reply = (fields) => ({ message: proto.Message.fromObject(fields) })
 const withPlugins = (plugins) => {
@@ -80,23 +80,48 @@ test('a button reply with no readable id asks the user to type the command', () 
   assert.equal(r.unreadable, true)
 })
 
-test('more than three buttons are folded into a list without losing options', () => {
+test('a message with more than three buttons keeps them all and gains a bottom sheet', () => {
   const qr = (t, id) => ({ name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: t, id }) })
   const nine = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'].map((x) => qr(x, `.c_${x}`))
-  const out = normalizeButtons(nine)
-  assert.equal(out.length, MAX_BUTTONS)
-  const rows = JSON.parse(out.find((b) => b.name === 'single_select').buttonParamsJson).sections[0].rows
-  const kept = out.filter((b) => b.name === 'quick_reply').length
-  assert.equal(rows.length + kept, nine.length)
-  assert.deepEqual(rows.map((r) => r.id), ['.c_c', '.c_d', '.c_e', '.c_f', '.c_g', '.c_h', '.c_i'])
+  const msg = normalizeMessageButtons({
+    interactiveMessage: { body: { text: 'x' }, nativeFlowMessage: { buttons: nine } },
+  })
+  const nf = msg.interactiveMessage.nativeFlowMessage
+  assert.equal(nf.buttons.length, nine.length, 'no button may be dropped')
+  assert.deepEqual(nf.buttons.map((b) => JSON.parse(b.buttonParamsJson).id), nine.map((b) => JSON.parse(b.buttonParamsJson).id))
+  const sheet = JSON.parse(nf.messageParamsJson).bottom_sheet
+  assert.equal(sheet.in_thread_buttons_limit, MAX_BUTTONS)
 })
 
-test('three buttons or fewer are left untouched', () => {
-  const two = [
-    { name: 'quick_reply', buttonParamsJson: '{}' },
-    { name: 'cta_url', buttonParamsJson: '{}' },
-  ]
-  assert.equal(normalizeButtons(two), two)
+test('a message with three buttons or fewer is left untouched', () => {
+  const two = {
+    interactiveMessage: {
+      body: { text: 'x' },
+      nativeFlowMessage: {
+        buttons: [
+          { name: 'quick_reply', buttonParamsJson: '{"id":".a"}' },
+          { name: 'cta_url', buttonParamsJson: '{}' },
+        ],
+      },
+    },
+  }
+  assert.equal(normalizeMessageButtons(two), two)
+})
+
+test('an existing bottom sheet keeps its own labels', () => {
+  const qr = (t, id) => ({ name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: t, id }) })
+  const buttons = ['a', 'b', 'c', 'd'].map((x) => qr(x, `.c_${x}`))
+  const msg = normalizeMessageButtons({
+    interactiveMessage: {
+      nativeFlowMessage: {
+        buttons,
+        messageParamsJson: JSON.stringify({ bottom_sheet: { in_thread_buttons_limit: 1, list_title: 'قوائمي' } }),
+      },
+    },
+  })
+  const sheet = JSON.parse(msg.interactiveMessage.nativeFlowMessage.messageParamsJson).bottom_sheet
+  assert.equal(sheet.list_title, 'قوائمي')
+  assert.equal(sheet.in_thread_buttons_limit, 1)
 })
 
 test('readInteractiveReply decodes every supported reply shape', () => {
