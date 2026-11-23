@@ -1,13 +1,45 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { proto } from '@whiskeysockets/baileys'
+import { proto, generateWAMessageFromContent } from '@whiskeysockets/baileys'
 import { buildInteractiveMessage, serialize } from '../lib/simple.js'
+import { wrapInteractiveMessage } from '../lib/interactive.js'
 
 serialize()
 
 const buttons = [
   { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: 'yes', id: '.ok' }) }
 ]
+
+test('the send path wraps buttons the way the old working bot did', () => {
+  const im = {
+    body: { text: 'مرحبا' },
+    footer: { text: 'فوتر' },
+    nativeFlowMessage: {
+      buttons: [{ name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: 'أ', id: '.answer_A' }) }],
+      messageParamsJson: '',
+    },
+  }
+  const msg = generateWAMessageFromContent('212675036009@s.whatsapp.net', wrapInteractiveMessage(im), {
+    userJid: '212693863911@s.whatsapp.net',
+  })
+  const dec = proto.Message.toObject(proto.Message.decode(proto.Message.encode(msg.message).finish()))
+
+  // الغلاف والموضع هما جوهر الإصلاح: خارجه يصل الزر كبطاقة صامتة.
+  assert.deepEqual(Object.keys(dec), ['viewOnceMessage'])
+  const inner = dec.viewOnceMessage.message
+  assert.equal(inner.messageContextInfo.deviceListMetadataVersion, 2)
+  assert.equal(inner.interactiveMessage.nativeFlowMessage.buttons.length, 1)
+  assert.equal(JSON.parse(inner.interactiveMessage.nativeFlowMessage.buttons[0].buttonParamsJson).id, '.answer_A')
+})
+
+test('the wrapper never overwrites the button payload it carries', () => {
+  const buttons = [
+    { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: 'أ', id: '.a' }) },
+    { name: 'cta_url', buttonParamsJson: JSON.stringify({ display_text: 'ب', url: 'https://x.com' }) },
+  ]
+  const wrapped = wrapInteractiveMessage({ body: { text: 't' }, nativeFlowMessage: { buttons } })
+  assert.deepEqual(wrapped.viewOnceMessage.message.interactiveMessage.nativeFlowMessage.buttons, buttons)
+})
 
 test('buildInteractiveMessage maps content into a nativeFlow interactiveMessage', () => {
   const { interactiveMessage: im, imageSource } = buildInteractiveMessage({

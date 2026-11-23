@@ -58,6 +58,13 @@ Config lives in `config.js` (`global.owner`, `global.sessions`, etc.).
   `prepareInteractiveMessage()`, applied by the `relayMessage` override, so
   every send path is covered. `npm run audit:buttons` fails on any button id
   with no registered command and lists plugins that rely on a sheet.
+- **The send shape must be `viewOnceMessage.message.interactiveMessage`, with
+  `messageContextInfo` at that inner level.** This is exactly what the old
+  working bot (built on `baileys-pro`) produced, and it is what WhatsApp
+  actually renders. `wrapInteractiveMessage()` in `lib/interactive.js` builds
+  it; the `sendMessage` override in `lib/simple.js` uses it for every
+  `interactiveButtons` send. An `interactiveMessage` placed at the top level of
+  the message reaches the recipient as a silent card with no buttons.
 - **Interactive messages need `messageContextInfo` — that is what makes buttons
   appear.** WhatsApp only renders the `nativeFlowMessage` buttons of an
   `interactiveMessage` when `messageContextInfo.deviceListMetadata` is present
